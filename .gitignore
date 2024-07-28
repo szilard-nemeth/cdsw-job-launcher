@@ -1,0 +1,7 @@
+.idea
+venv
+.DS_Store
+/build/
+/cdswjoblauncher.egg-info/
+dist
+__pycache__
