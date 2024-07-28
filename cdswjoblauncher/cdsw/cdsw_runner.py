@@ -3,7 +3,7 @@ import os
 import time
 from argparse import ArgumentParser
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from googleapiwrapper.google_drive import DriveApiFile
 from pythoncommons.date_utils import DateUtils
@@ -94,6 +94,8 @@ class ArgParser:
             help="List of valid env var names for command",
         )
 
+        parser.add_argument('--env', action='append', help='Additional env vars', required=True)
+
         parser.add_argument(
             "--dry-run",
             dest="dry_run",
@@ -137,6 +139,8 @@ class CdswRunnerConfig:
         self.config_reader = config_reader
         self.hadoop_cloudera_basedir = hadoop_cloudera_basedir
         self.default_email_recipients = args.default_email_recipients
+        self.envs: Dict[str, str] = self._parse_envs(args)
+
 
     def _determine_job_config_file_location(self, args):
         if self.execution_mode == ConfigMode.SPECIFIED_CONFIG_FILE:
@@ -184,6 +188,16 @@ class CdswRunnerConfig:
     def __str__(self):
         return f"Full command: {self.full_cmd}\n"
 
+    def _parse_envs(self, args):
+        d = {}
+        if args.env:
+            for env in args.env:
+                if "=" not in env:
+                    raise ValueError("Invalid env format! Expected format: <env-name>=<env-value>")
+                split = env.split("=")
+                d[split[0]] = d[split[1]]
+        return {}
+
 
 class CdswRunner:
     def __init__(self, config: CdswRunnerConfig):
@@ -211,7 +225,7 @@ class CdswRunner:
 
     def start(self):
         LOG.info("Starting CDSW runner...")
-        setup_result: CdswSetupResult = CdswSetup.initial_setup()
+        setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.envs)
         LOG.info("Setup result: %s", setup_result)
         self.job_config: CdswJobConfig = self.cdsw_runner_config.config_reader.read_from_file(
             self.cdsw_runner_config.job_config_file,

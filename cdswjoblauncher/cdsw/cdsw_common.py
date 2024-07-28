@@ -65,8 +65,6 @@ class CommonDirs:
     CDSW_BASEDIR = FileUtils.join_path("home", "cdsw")
     YARN_DEV_TOOLS_SCRIPTS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "scripts")
     YARN_DEV_TOOLS_JOBS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "jobs")
-    HADOOP_UPSTREAM_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "repos", "apache", "hadoop")
-    HADOOP_CLOUDERA_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "repos", "cloudera", "hadoop")
     USER_DEV_ROOT = FileUtils.join_path("/", "Users", "snemeth", "development")
     YARN_DEV_TOOLS_MODULE_ROOT = None
 
@@ -122,19 +120,13 @@ class CdswSetup:
         if CdswEnvVar.OVERRIDE_SCRIPT_BASEDIR.value in os.environ:
             basedir = OsUtils.get_env_value(CdswEnvVar.OVERRIDE_SCRIPT_BASEDIR.value)
         else:
-            basedir = CommonDirs.YARN_DEV_TOOLS_SCRIPTS_BASEDIR
+            basedir = CommonDirs.SCRIPTS_BASEDIR
         return basedir
 
     @staticmethod
     def _prepare_env_vars(env_var_dict):
         if not env_var_dict:
             env_var_dict = {}
-        env_var_dict.update(
-            {
-                CdswEnvVar.CLOUDERA_HADOOP_ROOT.value: CommonDirs.HADOOP_CLOUDERA_BASEDIR,
-                CdswEnvVar.HADOOP_DEV_DIR.value: CommonDirs.HADOOP_UPSTREAM_BASEDIR,
-            }
-        )
         for k, v in env_var_dict.items():
             OsUtils.set_env_value(k, v)
         return env_var_dict
