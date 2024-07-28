@@ -9,16 +9,8 @@ from dacite import from_dict
 from pythoncommons.date_utils import DateUtils
 from pythoncommons.string_utils import auto_str
 
-from yarndevtools.cdsw.constants import (
-    JiraUmbrellaFetcherEnvVar,
-    BranchComparatorEnvVar,
-    UnitTestResultFetcherEnvVar,
-    UnitTestResultAggregatorEmailEnvVar,
-    ReviewSheetBackportUpdaterEnvVar,
-    ReviewSyncEnvVar,
-    CdswEnvVar,
-)
-from yarndevtools.common.shared_command_utils import CommandType
+
+from cdswjoblauncher.cdsw.constants import CdswEnvVar
 
 MAIN_SCRIPT_ARGUMENTS_VAR_OVERRIDE_TEMPLATE = "Found argument in main_script_arguments and runconfig.main_script_arguments: '%s'. The latter will take predence."
 JOB_START_DATE_KEY = "JOB_START_DATE"
@@ -250,7 +242,7 @@ class CdswRun:
 @dataclass
 class CdswJobConfig:
     job_name: str
-    command_type: CommandType
+    command_type: str
     runs: Union[List[CdswRun], Callable] = field(default_factory=list)
     mandatory_env_vars: List[str] = field(default_factory=list)
     optional_env_vars: List[str] = field(default_factory=list)
@@ -283,20 +275,14 @@ class CdswJobConfig:
 
 @auto_str
 class CdswJobConfigReader:
-    command_to_env_var_class = {
-        CommandType.JIRA_UMBRELLA_DATA_FETCHER: JiraUmbrellaFetcherEnvVar,
-        CommandType.BRANCH_COMPARATOR: BranchComparatorEnvVar,
-        CommandType.UNIT_TEST_RESULT_FETCHER: UnitTestResultFetcherEnvVar,
-        CommandType.UNIT_TEST_RESULT_AGGREGATOR: UnitTestResultAggregatorEmailEnvVar,
-        CommandType.REVIEW_SHEET_BACKPORT_UPDATER: ReviewSheetBackportUpdaterEnvVar,
-        CommandType.REVIEWSYNC: ReviewSyncEnvVar,
-    }
+    def __init__(self, valid_env_vars):
+        self.valid_env_vars = valid_env_vars
 
     @staticmethod
-    def read_from_file(file):
+    def read_from_file(file, command_type_valid_env_vars: List[str]):
         if not file:
             raise ValueError("Config file must be specified!")
-        config_reader = CdswJobConfigReader()
+        config_reader = CdswJobConfigReader(command_type_valid_env_vars)
         conf_dict = config_reader._read_from_python_conf(file)
         config = from_dict(data_class=CdswJobConfig, data=conf_dict)
         config_reader.process_config(config)
@@ -322,19 +308,19 @@ class CdswJobConfigReader:
         config.runs_defined_as_callable = isinstance(config.runs, Callable)
         config.resolver = Resolver(config)
 
-        # Validatation
+        # Validation
         LOG.info("Validating config: %s", config)
         if not config.runs:
             raise ValueError("Section 'runs' must be defined and cannot be empty!")
         self._validate_run_names(config)
 
         # Post-initialize
-        enum_type = self.command_to_env_var_class[config.command_type]
+
         EnvironmentVariables(
             config.mandatory_env_vars,
             config.optional_env_vars,
             config.command_type,
-            enum_type,
+            self.valid_env_vars
         )
         config.resolver.resolve_vars()
         self._generate_runs_if_required(config)
@@ -521,29 +507,29 @@ class EnvironmentVariables:
         self,
         mandatory_env_vars: List[str],
         optional_env_vars: List[str],
-        command_type: CommandType,
-        enum_type,
+        command_type_real_name: str,
+        valid_env_vars: List[str],
     ):
-        self.valid_env_vars = [e.value for e in enum_type] + [e.value for e in CdswEnvVar]
-        self._validate_mandatory_env_var_names(mandatory_env_vars, command_type)
-        self._validate_optional_env_var_names(optional_env_vars, command_type)
+        self.valid_env_vars = valid_env_vars + [e.value for e in CdswEnvVar]
+        self._validate_mandatory_env_var_names(mandatory_env_vars, command_type_real_name)
+        self._validate_optional_env_var_names(optional_env_vars, command_type_real_name)
         self._ensure_if_mandatory_env_vars_are_set(mandatory_env_vars)
 
-    def _validate_optional_env_var_names(self, optional_env_vars, command_type):
+    def _validate_optional_env_var_names(self, optional_env_vars, command_type_real_name: str):
         for env_var_name in optional_env_vars:
             if env_var_name not in self.valid_env_vars:
                 raise ValueError(
                     "Invalid optional env var specified as '{}'. Valid env vars for Command '{}' are: {}".format(
-                        env_var_name, command_type, self.valid_env_vars
+                        env_var_name, command_type_real_name, self.valid_env_vars
                     )
                 )
 
-    def _validate_mandatory_env_var_names(self, mandatory_env_vars, command_type: CommandType):
+    def _validate_mandatory_env_var_names(self, mandatory_env_vars, command_type_real_name: str):
         for env_var_name in mandatory_env_vars:
             if env_var_name not in self.valid_env_vars:
                 raise ValueError(
                     "Invalid mandatory env var specified as '{}'. Valid env vars for Command '{}' are: {}".format(
-                        env_var_name, command_type, self.valid_env_vars
+                        env_var_name, command_type_real_name, self.valid_env_vars
                     )
                 )
 

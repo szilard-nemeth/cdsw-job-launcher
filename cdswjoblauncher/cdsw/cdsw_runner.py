@@ -24,10 +24,9 @@ from yarndevtools.cdsw.cdsw_common import (
 )
 from yarndevtools.cdsw.cdsw_config import CdswJobConfigReader, CdswJobConfig, CdswRun
 from yarndevtools.cdsw.constants import CdswEnvVar, BranchComparatorEnvVar
-from yarndevtools.common.shared_command_utils import CommandType, RepoType
+from yarndevtools.common.shared_command_utils import RepoType
 
 LOG = logging.getLogger(__name__)
-POSSIBLE_COMMAND_TYPES = [e.real_name for e in CommandType] + [e.output_dir_name for e in CommandType]
 
 
 class ConfigMode(Enum):
@@ -62,10 +61,37 @@ class ArgParser:
             help="Turn on console debug level logs",
         )
         parser.add_argument(
-            "cmd_type",
+            "--command-type-real-name",
+            default=None,
+            required=True,
+            help="Command type: real name",
+        )
+        parser.add_argument(
+            "--command-type-name",
+            default=None,
+            required=True,
+            help="Command type: name",
+        )
+        parser.add_argument(
+            "--command-type-session-based",
+            action="store_true",
+            default=None,
+            required=True,
+            help="Command type: session based",
+        )
+        parser.add_argument(
+            "--command-type-zip-name",
+            default=None,
+            required=True,
+            help="Command type: zip name",
+        )
+
+        parser.add_argument(
+            "--command-type-valid-env-vars",
+            nargs="+",
             type=str,
-            choices=POSSIBLE_COMMAND_TYPES,
-            help="Type of command.",
+            required=True,
+            help="List of valid env var names for command",
         )
 
         parser.add_argument(
@@ -86,8 +112,8 @@ class ArgParser:
 
 
 class CdswConfigReaderAdapter:
-    def read_from_file(self, file: str):
-        return CdswJobConfigReader.read_from_file(file)
+    def read_from_file(self, file: str, command_type_valid_env_vars: List[str]):
+        return CdswJobConfigReader.read_from_file(file, command_type_valid_env_vars)
 
 
 class CdswRunnerConfig:
@@ -99,7 +125,11 @@ class CdswRunnerConfig:
         hadoop_cloudera_basedir=CommonDirs.HADOOP_CLOUDERA_BASEDIR,
     ):
         self._validate_args(parser, args)
-        self.command_type = self._parse_command_type(args)
+        self.command_type_real_name = args.command_type_real_name
+        self.command_type_name = args.command_type_name
+        self.command_type_session_based = args.command_type_session_based
+        self.command_type_zip_name = args.command_type_zip_name
+        self.command_type_valid_env_vars = args.command_type_valid_env_vars
         self.full_cmd: str = OsUtils.determine_full_command_filtered(filter_password=True)
         self.execution_mode = self.determine_execution_mode(args)
         self.job_config_file = self._determine_job_config_file_location(args)
@@ -112,7 +142,7 @@ class CdswRunnerConfig:
         if self.execution_mode == ConfigMode.SPECIFIED_CONFIG_FILE:
             return args.config_file
         elif self.execution_mode == ConfigMode.AUTO_DISCOVERY:
-            LOG.info("Trying to discover config file for command: %s", self.command_type)
+            LOG.info("Trying to discover config file for command: %s", self.command_type_name)
             return self._discover_config_file()
 
     def _discover_config_file(self):
@@ -123,40 +153,15 @@ class CdswRunnerConfig:
             single_level=True,
             full_path_result=True,
         )
-        expected_filename = f"{self.command_type.real_name}_job_config.py"
+        expected_filename = f"{self.command_type_real_name}_job_config.py"
         file_names = [os.path.basename(f) for f in file_paths]
         if expected_filename not in file_names:
             raise ValueError(
                 "Auto-discovery failed for command '{}'. Expected file path: {}, Actual files found: {}".format(
-                    self.command_type, expected_filename, file_paths
+                    self.command_type_name, expected_filename, file_paths
                 )
             )
         return FileUtils.join_path(self.config_dir, expected_filename)
-
-    @staticmethod
-    def _parse_command_type(args):
-        try:
-            command_type = CommandType.by_real_name(args.cmd_type)
-            if command_type:
-                return command_type
-        except ValueError:
-            pass  # Fallback to output_dir_name
-        try:
-            command_type = CommandType.by_output_dir_name(args.cmd_type)
-            if command_type:
-                return command_type
-        except ValueError:
-            pass
-        try:
-            command_type = CommandType[args.cmd_type]
-            if command_type:
-                return command_type
-        except Exception:
-            raise ValueError(
-                "Invalid command type specified: {}. Possible values are: {}".format(
-                    args.cmd_type, POSSIBLE_COMMAND_TYPES
-                )
-            )
 
     def _validate_args(self, parser, args):
         self.config_file = self.config_dir = None
@@ -184,8 +189,8 @@ class CdswRunner:
     def __init__(self, config: CdswRunnerConfig):
         self.executed_commands = []
         self.google_drive_uploads: List[
-            Tuple[CommandType, str, DriveApiFile]
-        ] = []  # Tuple of: (command_type, drive_filename, drive_api_file)
+            Tuple[str, str, DriveApiFile]
+        ] = []  # Tuple of: (command_type_real_name, drive_filename, drive_api_file)
         self.common_mail_config = CommonMailConfig()
         self._setup_google_drive()
         self.cdsw_runner_config = config
@@ -193,14 +198,13 @@ class CdswRunner:
 
         # Dynamic fields
         self.job_config = None
-        self.command_type = None
         self.output_basedir = None
 
-    def _determine_command_type(self):
-        if self.cdsw_runner_config.command_type != self.job_config.command_type:
+    def _check_command_type(self):
+        if self.cdsw_runner_config.command_type_name != self.job_config.command_type.name:
             raise ValueError(
                 "Specified command line command type is different than job's command type. CLI: {}, Job definition: {}".format(
-                    self.cdsw_runner_config.command_type, self.job_config.command_type
+                    self.cdsw_runner_config.command_type_name, self.job_config.command_type
                 )
             )
         return self.job_config.command_type
@@ -210,17 +214,18 @@ class CdswRunner:
         setup_result: CdswSetupResult = CdswSetup.initial_setup()
         LOG.info("Setup result: %s", setup_result)
         self.job_config: CdswJobConfig = self.cdsw_runner_config.config_reader.read_from_file(
-            self.cdsw_runner_config.job_config_file
+            self.cdsw_runner_config.job_config_file,
+            self.cdsw_runner_config.command_type_valid_env_vars
         )
-        self.command_type = self._determine_command_type()
+        self._check_command_type()
         self.output_basedir = setup_result.output_basedir
         LOG.info("Setup result: %s", setup_result)
-        self._execute_preparation_steps(setup_result)
+        self._execute_yarndevtools_preparation_steps(setup_result)
 
         for run in self.job_config.runs:
             self.execute_yarndevtools_script(" ".join(run.main_script_arguments))
-            if self.command_type.session_based:
-                self.execute_command_data_zipper(self.command_type, debug=True)
+            if self.cdsw_runner_config.command_type_session_based:
+                self.execute_command_data_zipper(self.cdsw_runner_config.command_type_name, debug=True)
                 drive_link_html_text = self._upload_command_data_to_google_drive_if_required(run)
                 self._send_email_if_required(run, drive_link_html_text)
 
@@ -240,13 +245,13 @@ class CdswRunner:
 
         drive_filename = run.drive_api_upload_settings.file_name
         if not self.dry_run:
-            drive_api_file: DriveApiFile = self.upload_command_data_to_drive(self.command_type, drive_filename)
-            self.google_drive_uploads.append((self.command_type, drive_filename, drive_api_file))
+            drive_api_file: DriveApiFile = self.upload_command_data_to_drive(drive_filename)
+            self.google_drive_uploads.append((self.cdsw_runner_config.command_type_real_name, drive_filename, drive_api_file))
             return f'<a href="{drive_api_file.link}">Command data file: {drive_filename}</a>'
         else:
             LOG.info(
                 "[DRY-RUN] Would upload file for command type '%s' to Google Drive with name '%s'",
-                self.command_type,
+                self.cdsw_runner_config.command_type_real_name,
                 drive_filename,
             )
             return f'<a href="dummy_link">Command data file: {drive_filename}</a>'
@@ -274,11 +279,13 @@ class CdswRunner:
             **kwargs,
         )
 
-    def _execute_preparation_steps(self, setup_result):
-        if self.command_type == CommandType.JIRA_UMBRELLA_DATA_FETCHER:
+    def _execute_yarndevtools_preparation_steps(self, setup_result):
+        # TODO new move this to yarndevtools
+        # TODO NEW FIX
+        if self.job_config.command_type == "jira_umbrella_data_fetcher":
             self.execute_clone_downstream_repos_script(setup_result.basedir)
             self.execute_clone_upstream_repos_script(setup_result.basedir)
-        elif self.command_type == CommandType.BRANCH_COMPARATOR:
+        elif self.job_config.command_type == "branch_comparator":
             repo_type_env = OsUtils.get_env_value(
                 BranchComparatorEnvVar.BRANCH_COMP_REPO_TYPE.value, RepoType.DOWNSTREAM.value
             )
@@ -334,18 +341,18 @@ class CdswRunner:
     def current_date_formatted():
         return DateUtils.get_current_datetime()
 
-    def execute_command_data_zipper(self, command_type: CommandType, debug=False, ignore_filetypes: str = "java js"):
+    def execute_command_data_zipper(self, command_type_name: str, debug=False, ignore_filetypes: str = "java js"):
         debug_mode = "--debug" if debug else ""
         self.execute_yarndevtools_script(
             f"{debug_mode} "
-            f"{CommandType.ZIP_LATEST_COMMAND_DATA.name} {command_type.name} "
+            f"ZIP_LATEST_COMMAND_DATA {command_type_name} "
             f"--dest_dir /tmp "
             f"--ignore-filetypes {ignore_filetypes}"
         )
 
-    def upload_command_data_to_drive(self, cmd_type: CommandType, drive_filename: str) -> DriveApiFile:
-        full_file_path_of_cmd_data = FileUtils.join_path(self.output_basedir, cmd_type.command_data_zip_name)
-        return self.drive_cdsw_helper.upload(cmd_type, full_file_path_of_cmd_data, drive_filename)
+    def upload_command_data_to_drive(self, drive_filename: str) -> DriveApiFile:
+        full_file_path_of_cmd_data = FileUtils.join_path(self.output_basedir, self.cdsw_runner_config.command_type_zip_name)
+        return self.drive_cdsw_helper.upload(self.cdsw_runner_config.command_type_real_name, full_file_path_of_cmd_data, drive_filename)
 
     def send_latest_command_data_in_email(
         self,
@@ -366,7 +373,7 @@ class CdswRunner:
         )
         send_attachment_param = "--send-attachment" if send_attachment else ""
         self.execute_yarndevtools_script(
-            f"--debug {CommandType.SEND_LATEST_COMMAND_DATA.name} "
+            f"--debug SEND_LATEST_COMMAND_DATA "
             f"{self.common_mail_config.as_arguments()}"
             f'--subject "{subject}" '
             f'--sender "{sender}" '
@@ -388,7 +395,7 @@ class CdswRunner:
         return self.drive_cdsw_helper is not None
 
 
-if __name__ == "__main__":
+def main():
     start_time = time.time()
     args, parser = ArgParser.parse_args()
     # TODO Temporarily removed
@@ -402,10 +409,12 @@ if __name__ == "__main__":
     #     verbose_git_log=args.verbose,
     # )
     # LOG.info("Logging to files: %s", logging_config.log_file_paths)
-
     config = CdswRunnerConfig(parser, args, CdswConfigReaderAdapter())
     cdsw_runner = CdswRunner(config)
     cdsw_runner.start()
-
     end_time = time.time()
     LOG.info("Execution of script took %d seconds", end_time - start_time)
+
+
+if __name__ == "__main__":
+    main()
