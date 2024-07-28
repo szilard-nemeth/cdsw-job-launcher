@@ -9,7 +9,7 @@ from typing import List
 
 LOG = logging.getLogger(__name__)
 CDSW_BASEDIR = os.path.join("/home", "cdsw")
-YARN_DEV_TOOLS_JOBS_BASEDIR = os.path.join(CDSW_BASEDIR, "jobs")  # Same as CommonDirs.YARN_DEV_TOOLS_JOBS_BASEDIR
+JOBS_BASEDIR = os.path.join(CDSW_BASEDIR, "jobs")  # Same as CommonDirs.YARN_DEV_TOOLS_JOBS_BASEDIR
 
 MODULE_MODE_GLOBAL = "global"
 MODULE_MODE_USER = "user"
@@ -17,32 +17,31 @@ ACCEPTED_PYTHON_MODULE_MODES = [MODULE_MODE_USER, MODULE_MODE_GLOBAL]  # Same as
 PYTHON_MODULE_MODE_ENV_VAR = "PYTHON_MODULE_MODE"  # Same as CdswEnvVar.PYTHON_MODULE_MODE
 INSTALL_REQUIREMENTS_ENV_VAR = "INSTALL_REQUIREMENTS"  # Same as CdswEnvVar.INSTALL_REQUIREMENTS
 TEST_EXECUTION_MODE_ENV_VAR = "TEST_EXEC_MODE"  # Same as CdswEnvVar.TEST_EXECUTION_MODE
-YARNDEVTOOLS_MODULE_NAME = "yarndevtools"
 DEFAULT_TEST_EXECUTION_MODE = "cloudera"  # Same as TestExecMode.CLOUDERA.value
 
 
 class Reloader:
-    YARN_DEV_TOOLS_MODULE_ROOT = None
+    MODULE_ROOT = None
     CONFIGS_ROOT_DIR = None
     INSTALL_REQUIREMENTS_SCRIPT = None
 
     @classmethod
-    def start(cls):
+    def start(cls, module_name):
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-        cls._setup_paths()
+        cls._setup_paths(module_name)
         cls._install_requirements_if_needed()
-        LOG.info("{} Finished execution succesfully".format(sys.argv[0]))
+        LOG.info("{} Finished execution successfully".format(sys.argv[0]))
 
     @classmethod
-    def _setup_paths(cls):
+    def _setup_paths(cls, module_name):
         module_root = cls.get_python_module_root()
-        cls.YARN_DEV_TOOLS_MODULE_ROOT = os.path.join(module_root, YARNDEVTOOLS_MODULE_NAME)
-        cls.CONFIGS_ROOT_DIR = os.path.join(cls.YARN_DEV_TOOLS_MODULE_ROOT, "cdsw", "job_configs")
+        cls.MODULE_ROOT = os.path.join(module_root, module_name)
+        cls.CONFIGS_ROOT_DIR = os.path.join(cls.MODULE_ROOT, "cdsw", "job_configs")
         # TODO NEW should be a param
         cls.INSTALL_REQUIREMENTS_SCRIPT = os.path.join(
-            cls.YARN_DEV_TOOLS_MODULE_ROOT, "cdsw", "scripts", "install-requirements.sh"
+            cls.MODULE_ROOT, "cdsw", "scripts", "install-requirements.sh"
         )
-        LOG.info("YARN dev tools module root is: %s", cls.YARN_DEV_TOOLS_MODULE_ROOT)
+        LOG.info("Python module root is: %s", cls.MODULE_ROOT)
         cls._check_mandatory_scripts()
 
     @classmethod
@@ -53,6 +52,8 @@ class Reloader:
                     cls.INSTALL_REQUIREMENTS_SCRIPT
                 )
             )
+        if not os.path.isdir(JOBS_BASEDIR):
+            raise ValueError(f"Cannot find scripts directory: {JOBS_BASEDIR}")
 
     @classmethod
     def _install_requirements_if_needed(cls):
@@ -121,7 +122,7 @@ class Reloader:
             for file in files:
                 filepath = subdir + os.sep + file
                 if filepath.endswith(".py"):
-                    cls.copy_file(filepath, os.path.join(YARN_DEV_TOOLS_JOBS_BASEDIR, file))
+                    cls.copy_file(filepath, os.path.join(JOBS_BASEDIR, file))
 
     @classmethod
     def remove_dir(cls, dir, force=False):

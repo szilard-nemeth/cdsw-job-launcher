@@ -30,33 +30,44 @@ def add_to_pythonpath(additional_dir):
     print("Fixed PYTHONPATH: " + str(os.environ[pypath]))
 
 
-# Only used script is the libreloader from /home/cdsw/scripts/
-cdsw_home_dir = os.path.join("/home", "cdsw")
-scripts_dir = os.path.join(cdsw_home_dir, "scripts")
-jobs_dir = os.path.join(cdsw_home_dir, "jobs")
-add_to_pythonpath(scripts_dir)
 
-# NOW IT'S SAFE TO IMPORT LIBRELOADER
-# IGNORE FLAKE8: E402 module level import not at top of file
-from libreloader import reload_dependencies  # DO NOT REMOVE !! # noqa: E402
-from libreloader.reload_dependencies import YARNDEVTOOLS_MODULE_NAME, Reloader  # DO NOT REMOVE !! # noqa: E402
+def main():
+    if len(sys.argv) != 2:
+        raise ValueError("Unexpected number of arguments. "
+                         "Should call the script with these arguments: start_job.py <job-name> <module-name>")
+    job_name = sys.argv[1]
+    module_name = sys.argv[2]
 
-print(f"Name of the script      : {sys.argv[0]=}")
-print(f"Arguments of the script : {sys.argv[1:]=}")
-if len(sys.argv) != 2:
-    raise ValueError("Should only have one argument, the name of the job!")
+    # Only used script is the libreloader from /home/cdsw/scripts/
+    cdsw_home_dir = os.path.join("/home", "cdsw")
+    scripts_dir = os.path.join(cdsw_home_dir, "scripts")
+    jobs_dir = os.path.join(cdsw_home_dir, "jobs")
+    add_to_pythonpath(scripts_dir)
 
-reload_dependencies.Reloader.start()
+    # NOW IT'S SAFE TO IMPORT LIBRELOADER
+    # IGNORE FLAKE8: E402 module level import not at top of file
+    from libreloader import reload_dependencies  # DO NOT REMOVE !! # noqa: E402
+    from libreloader.reload_dependencies import Reloader  # DO NOT REMOVE !! # noqa: E402
 
-# Get the Python module root
-module_root = reload_dependencies.Reloader.get_python_module_root()
-yarn_dev_tools_module_root = os.path.join(module_root, YARNDEVTOOLS_MODULE_NAME)
-cdsw_runner_path = os.path.join(yarn_dev_tools_module_root, "cdsw", "cdsw_runner.py")
-print("YARN dev tools module root is: %s", Reloader.YARN_DEV_TOOLS_MODULE_ROOT)
+    print(f"Name of the script      : {sys.argv[0]=}")
+    print(f"Arguments of the script : {sys.argv[1:]=}")
+    if len(sys.argv) != 2:
+        raise ValueError("Should only have one argument, the name of the job!")
+
+    reload_dependencies.Reloader.start(module_name)
+
+    # Get the Python module root
+    module_root = reload_dependencies.Reloader.get_python_module_root()
+    yarn_dev_tools_module_root = os.path.join(module_root, module_name)
+    cdsw_runner_path = os.path.join(yarn_dev_tools_module_root, "cdsw", "cdsw_runner.py")
+    print("YARN dev tools module root is: %s", Reloader.MODULE_ROOT)
+
+    # Start the CDSW runner
+
+    sys.argv.append("--config-dir")
+    sys.argv.append(jobs_dir)
+    exec(open(cdsw_runner_path).read())
 
 
-# Start the CDSW runner
-job_name = sys.argv[1]
-sys.argv.append("--config-dir")
-sys.argv.append(jobs_dir)
-exec(open(cdsw_runner_path).read())
+if __name__ == '__main__':
+    main()
