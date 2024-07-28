@@ -59,7 +59,6 @@ BASEDIR = None
 PY3 = "python3"
 BASH = "bash"
 BASHX = "bash -x"
-MAIL_ADDR_YARN_ENG_BP = "yarn_eng_bp@cloudera.com"
 MAIL_ADDR_SNEMETH = "snemeth@cloudera.com"
 
 

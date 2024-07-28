@@ -20,7 +20,6 @@ from yarndevtools.cdsw.cdsw_common import (
     BASHX,
     PY3,
     CommonFiles,
-    MAIL_ADDR_YARN_ENG_BP,
     CommonMailConfig,
 )
 from yarndevtools.cdsw.cdsw_config import CdswJobConfigReader, CdswJobConfig, CdswRun
@@ -78,6 +77,7 @@ class ArgParser:
         )
         parser.add_argument("--config-file", type=str, help="Full path to job config file (JSON format)")
         parser.add_argument("--config-dir", type=str, help="Full path to the directory of the configs")
+        parser.add_argument("--default-email-recipients", type=str, help="Default mail recipients")
 
         args = parser.parse_args()
         if args.verbose:
@@ -106,6 +106,7 @@ class CdswRunnerConfig:
         self.dry_run = args.dry_run
         self.config_reader = config_reader
         self.hadoop_cloudera_basedir = hadoop_cloudera_basedir
+        self.default_email_recipients = args.default_email_recipients
 
     def _determine_job_config_file_location(self, args):
         if self.execution_mode == ConfigMode.SPECIFIED_CONFIG_FILE:
@@ -376,12 +377,11 @@ class CdswRunner:
             f"{send_attachment_param}"
         )
 
-    @staticmethod
-    def determine_recipients(default_recipients=MAIL_ADDR_YARN_ENG_BP):
+    def determine_recipients(self):
         recipients_env = OsUtils.get_env_value(CdswEnvVar.MAIL_RECIPIENTS.value)
         if recipients_env:
             return recipients_env
-        return default_recipients
+        return self.cdsw_runner_config.default_email_recipients
 
     @property
     def is_drive_integration_enabled(self):

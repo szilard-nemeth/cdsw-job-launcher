@@ -33,10 +33,12 @@ def add_to_pythonpath(additional_dir):
 
 def main():
     if len(sys.argv) != 2:
+        # TODO NEW
         raise ValueError("Unexpected number of arguments. "
-                         "Should call the script with these arguments: start_job.py <job-name> <module-name>")
-    job_name = sys.argv[1]
-    module_name = sys.argv[2]
+                         "Should call the script with these arguments: start_job.py <module-name> <job-name> <default-email-recipients")
+    module_name = sys.argv[1]
+    job_name = sys.argv[2]
+    default_mail_recipients = sys.argv[3]
 
     # Only used script is the libreloader from /home/cdsw/scripts/
     cdsw_home_dir = os.path.join("/home", "cdsw")
@@ -65,6 +67,8 @@ def main():
     # Start the CDSW runner
 
     sys.argv.append("--config-dir")
+    sys.argv.append(jobs_dir)
+    sys.argv.append("--default-email-recipients")
     sys.argv.append(jobs_dir)
     exec(open(cdsw_runner_path).read())
 
