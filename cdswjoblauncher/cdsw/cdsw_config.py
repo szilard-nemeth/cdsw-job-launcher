@@ -20,7 +20,7 @@ from yarndevtools.cdsw.constants import (
 )
 from yarndevtools.common.shared_command_utils import CommandType
 
-YARN_DEV_TOOLS_VAR_OVERRIDE_TEMPLATE = "Found argument in yarn_dev_tools_arguments and runconfig.yarn_dev_tools_arguments: '%s'. The latter will take predence."
+MAIN_SCRIPT_ARGUMENTS_VAR_OVERRIDE_TEMPLATE = "Found argument in main_script_arguments and runconfig.main_script_arguments: '%s'. The latter will take predence."
 JOB_START_DATE_KEY = "JOB_START_DATE"
 LOG = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ class CdswRun:
     name: str
     email_settings: Union[EmailSettings, None]
     drive_api_upload_settings: Union[DriveApiUploadSettings, None]
-    yarn_dev_tools_arguments: List[Union[str, Callable]] = field(default_factory=list)
+    main_script_arguments: List[Union[str, Callable]] = field(default_factory=list)
     variables: Dict[str, Union[str, Callable]] = field(default_factory=dict)
 
 
@@ -254,7 +254,7 @@ class CdswJobConfig:
     runs: Union[List[CdswRun], Callable] = field(default_factory=list)
     mandatory_env_vars: List[str] = field(default_factory=list)
     optional_env_vars: List[str] = field(default_factory=list)
-    yarn_dev_tools_arguments: List[Union[str, Callable]] = field(default_factory=list)
+    main_script_arguments: List[Union[str, Callable]] = field(default_factory=list)
     global_variables: Dict[str, Union[str, bool, int, Callable]] = field(default_factory=dict)
     env_sanitize_exceptions: List[str] = field(default_factory=list)
 
@@ -338,7 +338,7 @@ class CdswJobConfigReader:
         )
         config.resolver.resolve_vars()
         self._generate_runs_if_required(config)
-        self._finalize_yarn_dev_tools_arguments(config)
+        self._finalize_main_script_arguments(config)
 
     @staticmethod
     def _validate_run_names(config, force_validate=False):
@@ -365,13 +365,13 @@ class CdswJobConfigReader:
                 Resolver.FIELD_SUBSTITUTION_PHASE2_DYNAMIC_RUN_CONFIG,
             )
 
-    def _finalize_yarn_dev_tools_arguments(self, config):
+    def _finalize_main_script_arguments(self, config):
         for run in config.runs:
             final_args_with_params: Dict[str, List[str]] = {}
-            self._fill_args_from(final_args_with_params, config.yarn_dev_tools_arguments, warn_when_overrides=False)
-            # Add yarndevtools arguments for a specific run
-            self._fill_args_from(final_args_with_params, run.yarn_dev_tools_arguments, warn_when_overrides=True)
-            run.yarn_dev_tools_arguments = [" ".join([arg, *params]) for arg, params in final_args_with_params.items()]
+            self._fill_args_from(final_args_with_params, config.main_script_arguments, warn_when_overrides=False)
+            # Add main_script_arguments for a specific run
+            self._fill_args_from(final_args_with_params, run.main_script_arguments, warn_when_overrides=True)
+            run.main_script_arguments = [" ".join([arg, *params]) for arg, params in final_args_with_params.items()]
 
     @staticmethod
     def _fill_args_from(result: Dict[str, List[str]], arguments: List[str], warn_when_overrides=False):
@@ -385,11 +385,11 @@ class CdswJobConfigReader:
             key = split[0]
             if len(split) == 1:
                 if warn_when_overrides and key in result:
-                    LOG.warning(YARN_DEV_TOOLS_VAR_OVERRIDE_TEMPLATE, key)
+                    LOG.warning(MAIN_SCRIPT_ARGUMENTS_VAR_OVERRIDE_TEMPLATE, key)
                 result[key] = []
             else:
                 if warn_when_overrides and key in result:
-                    LOG.warning(YARN_DEV_TOOLS_VAR_OVERRIDE_TEMPLATE, key)
+                    LOG.warning(MAIN_SCRIPT_ARGUMENTS_VAR_OVERRIDE_TEMPLATE, key)
                 result[key] = split[1:]
 
     def __repr__(self):
@@ -403,19 +403,19 @@ class Resolver:
         FieldSpec("runs[].email_settings.attachment_file_name"),
         FieldSpec("runs[].email_settings.email_body_file_from_command_data"),
         FieldSpec("runs[].drive_api_upload_settings.file_name"),
-        FieldSpec("runs[].yarn_dev_tools_arguments"),
+        FieldSpec("runs[].main_script_arguments"),
         FieldSpec("runs[].variables"),
     ]
 
     _DEFAULT_VARIABLE_SUBSTITUTION_FIELDS = [
         FieldSpec("global_variables"),
         *_FIELD_SUBSTITIONS_RUN_FIELDS,
-        FieldSpec("yarn_dev_tools_arguments"),
+        FieldSpec("main_script_arguments"),
     ]
 
     _FIELD_SUBSTITUTION_PHASE1_DYNAMIC_RUN_CONFIG = [
         FieldSpec("global_variables"),
-        FieldSpec("yarn_dev_tools_arguments"),
+        FieldSpec("main_script_arguments"),
     ]
 
     FIELD_SUBSTITUTION_PHASE2_DYNAMIC_RUN_CONFIG = [*_FIELD_SUBSTITIONS_RUN_FIELDS]
@@ -449,7 +449,7 @@ class Resolver:
                 return val
         elif resolution_context == "variables" and type(self._current_rfs.parent == CdswRun):
             return self._resolve_from_global(var_name, resolution_context)
-        elif resolution_context == "yarn_dev_tools_arguments" and type(self._current_rfs.parent == CdswRun):
+        elif resolution_context == "main_script_arguments" and type(self._current_rfs.parent == CdswRun):
             cdsw_run = self._current_rfs.parent
             val = self._resolve_from_variables(cdsw_run, var_name, resolution_context)
             if isinstance(val, Callable):
