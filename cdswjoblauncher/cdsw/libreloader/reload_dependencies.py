@@ -7,9 +7,10 @@ import subprocess
 import sys
 from typing import List
 
+from cdswjoblauncher.cdsw.cdsw_common import CommonDirs
+
 LOG = logging.getLogger(__name__)
 CDSW_BASEDIR = os.path.join("/home", "cdsw")
-JOBS_BASEDIR = os.path.join(CDSW_BASEDIR, "jobs")  # Same as CommonDirs.YARN_DEV_TOOLS_JOBS_BASEDIR
 
 MODULE_MODE_GLOBAL = "global"
 MODULE_MODE_USER = "user"
@@ -37,7 +38,7 @@ class Reloader:
         module_root = cls.get_python_module_root()
         cls.MODULE_ROOT = os.path.join(module_root, module_name)
         cls.CONFIGS_ROOT_DIR = os.path.join(cls.MODULE_ROOT, "cdsw", "job_configs")
-        # TODO NEW should be a param
+        # TODO cdsw-separation should be a param
         cls.INSTALL_REQUIREMENTS_SCRIPT = os.path.join(
             cls.MODULE_ROOT, "cdsw", "scripts", "install-requirements.sh"
         )
@@ -52,8 +53,8 @@ class Reloader:
                     cls.INSTALL_REQUIREMENTS_SCRIPT
                 )
             )
-        if not os.path.isdir(JOBS_BASEDIR):
-            raise ValueError(f"Cannot find scripts directory: {JOBS_BASEDIR}")
+        if not os.path.isdir(CommonDirs.JOBS_BASEDIR):
+            raise ValueError(f"Cannot find scripts directory: {CommonDirs.JOBS_BASEDIR}")
 
     @classmethod
     def _install_requirements_if_needed(cls):

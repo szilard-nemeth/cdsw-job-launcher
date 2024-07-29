@@ -1,5 +1,5 @@
-from yarndevtools.cdsw.cdsw_config import Include
-from yarndevtools.constants import ReportFile
+from cdswjoblauncher.cdsw.cdsw_common import ReportFile
+from cdswjoblauncher.cdsw.cdsw_config import Include
 
 config = {
     "job_name": "Reviewsync",

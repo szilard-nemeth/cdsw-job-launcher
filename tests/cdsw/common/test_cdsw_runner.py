@@ -13,28 +13,19 @@ from pythoncommons.os_utils import OsUtils
 from pythoncommons.project_utils import ProjectUtils
 from pythoncommons.string_utils import StringUtils
 
+from cdswjoblauncher.cdsw.cdsw_common import CdswSetup, CommonFiles
+from cdswjoblauncher.cdsw.cdsw_config import CdswRun, EmailSettings, CdswJobConfig, DriveApiUploadSettings, \
+    CdswJobConfigReader
+from cdswjoblauncher.cdsw.cdsw_runner import CdswRunnerConfig, CdswRunner, ConfigMode, CdswConfigReaderAdapter
+from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3
 from tests.cdsw.common.testutils.cdsw_testing_common import (
     CommandExpectations,
     CdswTestingCommons,
     FakeGoogleDriveCdswHelper,
 )
-from tests.test_utilities import Object
-from yarndevtools.cdsw.cdsw_common import CommonFiles, CdswSetup
-from yarndevtools.cdsw.cdsw_config import (
-    CdswRun,
-    CdswJobConfig,
-    EmailSettings,
-    DriveApiUploadSettings,
-    CdswJobConfigReader,
-)
-from yarndevtools.cdsw.cdsw_runner import (
-    CdswRunnerConfig,
-    CdswRunner,
-    ConfigMode,
-    CdswConfigReaderAdapter,
-)
-from yarndevtools.cdsw.constants import CdswEnvVar
-from yarndevtools.constants import YARNDEVTOOLS_MODULE_NAME, PYTHON3
+from yarndevtools.constants import YARNDEVTOOLS_MODULE_NAME
+
+from tests.cdsw.common.testutils.test_utilities import Object
 
 FAKE_CONFIG_FILE = "fake-config-file.py"
 REVIEWSYNC_CONFIG_FILE_NAME = "reviewsync_job_config.py"
@@ -71,7 +62,7 @@ class TestCdswRunner(unittest.TestCase):
 
         # We need the value of 'CommonFiles.YARN_DEV_TOOLS_SCRIPT'
         CdswSetup._setup_python_module_root_and_yarndevtools_path()
-        cls.yarn_dev_tools_script_path = CommonFiles.YARN_DEV_TOOLS_SCRIPT
+        cls.main_script_path = CommonFiles.YARN_DEV_TOOLS_SCRIPT
         cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper()
 
     def setUp(self) -> None:
@@ -202,7 +193,7 @@ class TestCdswRunner(unittest.TestCase):
         exp_command_1 = (
             CommandExpectations(self)
             .add_expected_ordered_arg("python3")
-            .add_expected_ordered_arg(self.yarn_dev_tools_script_path)
+            .add_expected_ordered_arg(self.main_script_path)
             .add_expected_arg("--arg1")
             .add_expected_arg("--arg2", param="bla")
             .add_expected_arg("--arg3", param="bla3")
@@ -212,7 +203,7 @@ class TestCdswRunner(unittest.TestCase):
         exp_command_2 = (
             CommandExpectations(self)
             .add_expected_ordered_arg("python3")
-            .add_expected_ordered_arg(self.yarn_dev_tools_script_path)
+            .add_expected_ordered_arg(self.main_script_path)
             .add_expected_ordered_arg("ZIP_LATEST_COMMAND_DATA")
             .add_expected_ordered_arg("REVIEWSYNC")
             .add_expected_arg("--debug")
@@ -226,7 +217,7 @@ class TestCdswRunner(unittest.TestCase):
         exp_command_3 = (
             CommandExpectations(self)
             .add_expected_ordered_arg("python3")
-            .add_expected_ordered_arg(self.yarn_dev_tools_script_path)
+            .add_expected_ordered_arg(self.main_script_path)
             .add_expected_ordered_arg("SEND_LATEST_COMMAND_DATA")
             .add_expected_arg("--debug")
             .add_expected_arg("--smtp_server", wrap_d("smtp.gmail.com"))
@@ -264,19 +255,19 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
-        calls_of_yarndevtools = mock_subprocess_runner.call_args_list
+        calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
         self.assertIn(
-            f"{PYTHON3} {self.yarn_dev_tools_script_path} --arg1 --arg2 bla --arg3 bla3",
-            self._get_call_arguments_as_str(calls_of_yarndevtools, 0),
+            f"{PYTHON3} {self.main_script_path} --arg1 --arg2 bla --arg3 bla3",
+            self._get_call_arguments_as_str(calls_of_main_script, 0),
         )
         self.assertIn(
-            f"{PYTHON3} {self.yarn_dev_tools_script_path} --debug ZIP_LATEST_COMMAND_DATA REVIEWSYNC",
-            self._get_call_arguments_as_str(calls_of_yarndevtools, 1),
+            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA REVIEWSYNC",
+            self._get_call_arguments_as_str(calls_of_main_script, 1),
         )
         self.assertIn(
-            f"{PYTHON3} {self.yarn_dev_tools_script_path} --debug SEND_LATEST_COMMAND_DATA",
-            self._get_call_arguments_as_str(calls_of_yarndevtools, 2),
+            f"{PYTHON3} {self.main_script_path} --debug SEND_LATEST_COMMAND_DATA",
+            self._get_call_arguments_as_str(calls_of_main_script, 2),
         )
         self.assertEqual(
             calls_of_google_drive_uploader,
@@ -292,18 +283,18 @@ class TestCdswRunner(unittest.TestCase):
         )
 
         self.assertIn(
-            f"{PYTHON3} {self.yarn_dev_tools_script_path} --arg1 --arg2 bla --arg3 bla3",
-            self._get_call_arguments_as_str(calls_of_yarndevtools, 3),
+            f"{PYTHON3} {self.main_script_path} --arg1 --arg2 bla --arg3 bla3",
+            self._get_call_arguments_as_str(calls_of_main_script, 3),
         )
         self.assertIn(
-            f"{PYTHON3} {self.yarn_dev_tools_script_path} --debug ZIP_LATEST_COMMAND_DATA REVIEWSYNC",
-            self._get_call_arguments_as_str(calls_of_yarndevtools, 4),
+            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA REVIEWSYNC",
+            self._get_call_arguments_as_str(calls_of_main_script, 4),
         )
 
         # Assert there are no more calls
         self.assertTrue(
-            len(calls_of_yarndevtools) == 5,
-            msg="Unexpected calls of yarndevtools: {}. First 5 calls are okay.".format(calls_of_yarndevtools),
+            len(calls_of_main_script) == 5,
+            msg="Unexpected calls of yarndevtools: {}. First 5 calls are okay.".format(calls_of_main_script),
         )
         self.assertTrue(
             len(calls_of_google_drive_uploader) == 1,
@@ -347,14 +338,14 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
-        calls_of_yarndevtools = mock_subprocess_runner.call_args_list
+        calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
 
         self.assertTrue(
             len(calls_of_google_drive_uploader) == 0,
             msg="Unexpected calls to Google Drive uploader: {}".format(calls_of_google_drive_uploader),
         )
-        CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_yarndevtools, "SEND_LATEST_COMMAND_DATA")
+        CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_main_script, "SEND_LATEST_COMMAND_DATA")
 
     @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
@@ -385,14 +376,14 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
-        calls_of_yarndevtools = mock_subprocess_runner.call_args_list
+        calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
 
         self.assertTrue(
             len(calls_of_google_drive_uploader) == 0,
             msg="Unexpected calls to Google Drive uploader: {}".format(calls_of_google_drive_uploader),
         )
-        CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_yarndevtools, "SEND_LATEST_COMMAND_DATA")
+        CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_main_script, "SEND_LATEST_COMMAND_DATA")
 
     @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
@@ -416,7 +407,7 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
-        calls_of_yarndevtools = mock_subprocess_runner.call_args_list
+        calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
 
         self.assertTrue(
@@ -424,8 +415,8 @@ class TestCdswRunner(unittest.TestCase):
             msg="Unexpected calls to Google Drive uploader: {}".format(calls_of_google_drive_uploader),
         )
         self.assertTrue(
-            len(calls_of_yarndevtools) == 0,
-            msg="Unexpected calls to yarndevtools.py: {}".format(calls_of_yarndevtools),
+            len(calls_of_main_script) == 0,
+            msg="Unexpected calls to yarndevtools.py: {}".format(calls_of_main_script),
         )
 
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)

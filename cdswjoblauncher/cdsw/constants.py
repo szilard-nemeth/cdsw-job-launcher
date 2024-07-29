@@ -1,16 +1,21 @@
 # TODO Add default value of all env vars to enum
 # TODO Move all EnvVar classes to commands?
 from enum import Enum
+from os.path import expanduser
 
+from pythoncommons.file_utils import FileUtils
 
-# TODO NEW Move yarndevtools specific stuff from here
+SECRET_PROJECTS_DIR = FileUtils.join_path(expanduser("~"), ".secret", "projects", "cloudera")
+PYTHON3 = "python3"
+
+# TODO cdsw-separation Move yarndevtools specific stuff from here
 class YarnDevToolsEnvVar(Enum):
     PROJECT_DETERMINATION_STRATEGY = "PROJECT_DETERMINATION_STRATEGY"
     ENV_CLOUDERA_HADOOP_ROOT = "CLOUDERA_HADOOP_ROOT"
     ENV_HADOOP_DEV_DIR = "HADOOP_DEV_DIR"
 
 
-# TODO NEW Move yarndevtools specific stuff from here
+# TODO cdsw-separation Move yarndevtools specific stuff from here
 class CdswEnvVar(Enum):
     MAIL_ACC_PASSWORD = "MAIL_ACC_PASSWORD"
     MAIL_ACC_USER = "MAIL_ACC_USER"

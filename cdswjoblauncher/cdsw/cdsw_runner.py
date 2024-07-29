@@ -11,20 +11,10 @@ from pythoncommons.file_utils import FileUtils, FindResultType
 from pythoncommons.os_utils import OsUtils
 from pythoncommons.process import SubprocessCommandRunner
 
-from yarndevtools.cdsw.cdsw_common import (
-    CdswSetupResult,
-    CdswSetup,
-    CommonDirs,
-    GoogleDriveCdswHelper,
-    CMD_LOG,
-    BASHX,
-    PY3,
-    CommonFiles,
-    CommonMailConfig,
-)
-from yarndevtools.cdsw.cdsw_config import CdswJobConfigReader, CdswJobConfig, CdswRun
-from yarndevtools.cdsw.constants import CdswEnvVar, BranchComparatorEnvVar
-from yarndevtools.common.shared_command_utils import RepoType
+from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult, CdswSetup, CMD_LOG, GoogleDriveCdswHelper, BASHX, PY3, \
+    CommonFiles, CommonMailConfig, CommonDirs
+from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfig, CdswRun, CdswJobConfigReader
+from cdswjoblauncher.cdsw.constants import CdswEnvVar
 
 LOG = logging.getLogger(__name__)
 
@@ -294,8 +284,8 @@ class CdswRunner:
         )
 
     def _execute_yarndevtools_preparation_steps(self, setup_result):
-        # TODO new move this to yarndevtools
-        # TODO NEW FIX
+        # TODO cdsw-separation move this to yarndevtools
+        # TODO cdsw-separation FIX
         if self.job_config.command_type == "jira_umbrella_data_fetcher":
             self.execute_clone_downstream_repos_script(setup_result.basedir)
             self.execute_clone_upstream_repos_script(setup_result.basedir)
@@ -327,13 +317,13 @@ class CdswRunner:
         return GoogleDriveCdswHelper()
 
     def execute_clone_downstream_repos_script(self, basedir):
-        # TODO NEW should be a param
+        # TODO cdsw-separation should be a param
         script = os.path.join(basedir, "clone_downstream_repos.sh")
         cmd = f"{BASHX} {script}"
         self._run_command(cmd)
 
     def execute_clone_upstream_repos_script(self, basedir):
-        # TODO NEW should be a param
+        # TODO cdsw-separation should be a param
         script = os.path.join(basedir, "clone_upstream_repos.sh")
         cmd = f"{BASHX} {script}"
         self._run_command(cmd)

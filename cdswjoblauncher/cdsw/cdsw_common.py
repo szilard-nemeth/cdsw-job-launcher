@@ -30,13 +30,21 @@ from pythoncommons.project_utils import (
     PROJECTS_BASEDIR_NAME,
 )
 from yarndevtools.cdsw.constants import (
-    CdswEnvVar,
     PROJECT_NAME,
     UnitTestResultAggregatorEmailEnvVar,
-    SECRET_PROJECTS_DIR,
 )
 
 from yarndevtools.constants import YARNDEVTOOLS_MODULE_NAME, UPSTREAM_JIRA_BASE_URL
+
+from cdswjoblauncher.cdsw.constants import CdswEnvVar, SECRET_PROJECTS_DIR
+
+
+class ReportFile(Enum):
+    SHORT_TXT = "report-short.txt"
+    DETAILED_TXT = "report-detailed.txt"
+    SHORT_HTML = "report-short.html"
+    DETAILED_HTML = "report-detailed.html"
+
 
 # MAKE SURE THIS PRECEDES IMPORT TO pythoncommons
 
@@ -63,8 +71,8 @@ MAIL_ADDR_SNEMETH = "snemeth@cloudera.com"
 
 class CommonDirs:
     CDSW_BASEDIR = FileUtils.join_path("home", "cdsw")
-    YARN_DEV_TOOLS_SCRIPTS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "scripts")
-    YARN_DEV_TOOLS_JOBS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "jobs")
+    SCRIPTS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "scripts")
+    JOBS_BASEDIR = os.path.join(CDSW_BASEDIR, "jobs")
     USER_DEV_ROOT = FileUtils.join_path("/", "Users", "snemeth", "development")
     YARN_DEV_TOOLS_MODULE_ROOT = None
 
@@ -87,7 +95,7 @@ class CdswSetupResult:
 
 class CdswSetup:
     @staticmethod
-    def initial_setup(env_var_dict: Dict[str, str] = None):
+    def initial_setup(env_vars: Dict[str, str] = None):
         enable_handler_sanity_check = OsUtils.is_env_var_true(
             CdswEnvVar.ENABLE_LOGGER_HANDLER_SANITY_CHECK.value, default_val=True
         )
@@ -105,7 +113,7 @@ class CdswSetup:
         )
         LOG.info("Logging to files: %s", logging_config.log_file_paths)
         LOG.info(f"Python version info: {sys.version}")
-        env_var_dict = CdswSetup._prepare_env_vars(env_var_dict)
+        env_vars = CdswSetup._prepare_env_vars(env_vars)
         basedir = CdswSetup._determine_basedir()
 
         # This must happen before other operations as it sets: CommonDirs.YARN_DEV_TOOLS_MODULE_ROOT
@@ -113,7 +121,7 @@ class CdswSetup:
         LOG.info("Using basedir for scripts: %s", basedir)
         LOG.debug("Common dirs after setup: %s", ObjUtils.get_class_members(CommonDirs))
         LOG.debug("Common files after setup: %s", ObjUtils.get_class_members(CommonFiles))
-        return CdswSetupResult(basedir, output_basedir, env_var_dict)
+        return CdswSetupResult(basedir, output_basedir, env_vars)
 
     @staticmethod
     def _determine_basedir():

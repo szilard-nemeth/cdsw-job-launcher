@@ -18,9 +18,10 @@ from pythoncommons.object_utils import ObjUtils
 from pythoncommons.project_utils import SimpleProjectUtils
 
 from tests.test_utilities import Object
-from yarndevtools.cdsw.cdsw_common import GoogleDriveCdswHelper, CDSW_PROJECT
-from yarndevtools.cdsw.constants import SECRET_PROJECTS_DIR
 from yarndevtools.constants import YARNDEVTOOLS_MODULE_NAME, PYTHON3
+
+from cdswjoblauncher.cdsw.cdsw_common import GoogleDriveCdswHelper
+from cdswjoblauncher.cdsw.constants import SECRET_PROJECTS_DIR
 
 MANY_PARAMS = 9999
 

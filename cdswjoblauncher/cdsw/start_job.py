@@ -35,7 +35,7 @@ def add_to_pythonpath(additional_dir):
 
 def main():
     if len(sys.argv) != 3:
-        # TODO NEW
+        # TODO cdsw-separation
         raise ValueError("Unexpected number of arguments. "
                          "Should call the script with these arguments: start_job.py <module-name> <job-name> <default-email-recipients")
     module_name = sys.argv[1]
@@ -65,7 +65,7 @@ def main():
     # Get the Python module root
     module_root = reload_dependencies.Reloader.get_python_module_root()
     yarn_dev_tools_module_root = os.path.join(module_root, module_name)
-    # TODO NEW this path is invalid
+    # TODO cdsw-separation this path is invalid
     cdsw_runner_path = os.path.join(yarn_dev_tools_module_root, "cdsw", "cdsw_runner.py")
     print("YARN dev tools module root is: %s", Reloader.MODULE_ROOT)
 
