@@ -97,6 +97,9 @@ class ArgParser:
         parser.add_argument("--config-dir", type=str, help="Full path to the directory of the configs")
         parser.add_argument("--default-email-recipients", type=str, help="Default mail recipients")
 
+        parser.add_argument("--module-name", type=str, help="Name of the module to load for CDSW execution")
+        parser.add_argument("--main-script-name", type=str, help="Name of the main script from the module to execute on CDSW")
+
         args = parser.parse_args()
         if args.verbose:
             print("Args: " + str(args))
@@ -130,6 +133,8 @@ class CdswRunnerConfig:
         self.hadoop_cloudera_basedir = hadoop_cloudera_basedir
         self.default_email_recipients = args.default_email_recipients
         self.envs: Dict[str, str] = self._parse_envs(args)
+        self.module_name = args.module_name
+        self.main_script_name= args.main_script_name
 
 
     def _determine_job_config_file_location(self, args):
@@ -215,7 +220,7 @@ class CdswRunner:
 
     def start(self):
         LOG.info("Starting CDSW runner...")
-        setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.envs)
+        setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.module_name, self.cdsw_runner_config.main_script_name, self.cdsw_runner_config.envs)
         LOG.info("Setup result: %s", setup_result)
         self.job_config: CdswJobConfig = self.cdsw_runner_config.config_reader.read_from_file(
             self.cdsw_runner_config.job_config_file,

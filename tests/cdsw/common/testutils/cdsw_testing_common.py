@@ -207,7 +207,7 @@ class CommandExpectations:
         elif command_type in COMMAND_ARGUMENTS and arg in COMMAND_ARGUMENTS[command_type]:
             return CommandExpectations._extract_param_count_for_arg_from_dict(COMMAND_ARGUMENTS[command_type], arg)
         elif self.fake_command and command_type is None:
-            # Assuming one paramter per arg
+            # Assuming one parameter per arg
             return 1
         else:
             raise ValueError("Unknown argument '{}' of command type {}".format(arg, command_type))

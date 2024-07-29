@@ -8,6 +8,7 @@ from pythoncommons.file_utils import FileUtils
 SECRET_PROJECTS_DIR = FileUtils.join_path(expanduser("~"), ".secret", "projects", "cloudera")
 PYTHON3 = "python3"
 
+
 # TODO cdsw-separation Move yarndevtools specific stuff from here
 class YarnDevToolsEnvVar(Enum):
     PROJECT_DETERMINATION_STRATEGY = "PROJECT_DETERMINATION_STRATEGY"

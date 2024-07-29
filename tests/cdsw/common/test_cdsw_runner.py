@@ -13,7 +13,7 @@ from pythoncommons.os_utils import OsUtils
 from pythoncommons.project_utils import ProjectUtils
 from pythoncommons.string_utils import StringUtils
 
-from cdswjoblauncher.cdsw.cdsw_common import CdswSetup, CommonFiles
+from cdswjoblauncher.cdsw.cdsw_common import CdswSetup, CommonFiles, GoogleDriveCdswHelper
 from cdswjoblauncher.cdsw.cdsw_config import CdswRun, EmailSettings, CdswJobConfig, DriveApiUploadSettings, \
     CdswJobConfigReader
 from cdswjoblauncher.cdsw.cdsw_runner import CdswRunnerConfig, CdswRunner, ConfigMode, CdswConfigReaderAdapter
@@ -31,10 +31,9 @@ FAKE_CONFIG_FILE = "fake-config-file.py"
 REVIEWSYNC_CONFIG_FILE_NAME = "reviewsync_job_config.py"
 
 DEFAULT_COMMAND_TYPE = "reviewsync"
-CDSW_JOB_CONFIG_READER_CLASS_NAME = CdswJobConfigReader.__name__
-CDSW_CONFIG_READER_READ_METHOD_PATH = "yarndevtools.cdsw.cdsw_config.{}".format(CDSW_JOB_CONFIG_READER_CLASS_NAME)
+CDSW_CONFIG_READER_READ_METHOD_PATH = f"cdswjoblauncher.cdsw.cdsw_config.{CdswJobConfigReader.__name__}"
+CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH = f"cdswjoblauncher.cdsw.cdsw_common.{GoogleDriveCdswHelper.__name__}.upload"
 SUBPROCESSRUNNER_RUN_METHOD_PATH = "pythoncommons.process.SubprocessCommandRunner.run_and_follow_stdout_stderr"
-CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH = "yarndevtools.cdsw.cdsw_common.GoogleDriveCdswHelper.upload"
 DRIVE_API_WRAPPER_UPLOAD_PATH = "googleapiwrapper.google_drive.DriveApiWrapper.upload_file"
 LOG = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ class TestCdswRunner(unittest.TestCase):
         OsUtils.set_env_value("ENABLE_LOGGER_HANDLER_SANITY_CHECK", "False")
 
         # We need the value of 'CommonFiles.YARN_DEV_TOOLS_SCRIPT'
-        CdswSetup._setup_python_module_root_and_yarndevtools_path()
+        CdswSetup._setup_python_module_root_and_main_script_path()
         cls.main_script_path = CommonFiles.YARN_DEV_TOOLS_SCRIPT
         cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper()
 

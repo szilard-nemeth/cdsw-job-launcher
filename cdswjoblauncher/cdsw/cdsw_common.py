@@ -74,7 +74,7 @@ class CommonDirs:
     SCRIPTS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "scripts")
     JOBS_BASEDIR = os.path.join(CDSW_BASEDIR, "jobs")
     USER_DEV_ROOT = FileUtils.join_path("/", "Users", "snemeth", "development")
-    YARN_DEV_TOOLS_MODULE_ROOT = None
+    MODULE_ROOT = None
 
 
 class CommonFiles:
@@ -95,7 +95,7 @@ class CdswSetupResult:
 
 class CdswSetup:
     @staticmethod
-    def initial_setup(env_vars: Dict[str, str] = None):
+    def initial_setup(module_name: str, main_script_name: str, env_vars: Dict[str, str] = None):
         enable_handler_sanity_check = OsUtils.is_env_var_true(
             CdswEnvVar.ENABLE_LOGGER_HANDLER_SANITY_CHECK.value, default_val=True
         )
@@ -117,7 +117,7 @@ class CdswSetup:
         basedir = CdswSetup._determine_basedir()
 
         # This must happen before other operations as it sets: CommonDirs.YARN_DEV_TOOLS_MODULE_ROOT
-        CdswSetup._setup_python_module_root_and_yarndevtools_path()
+        CdswSetup._setup_python_module_root_and_main_script_path(module_name, main_script_name)
         LOG.info("Using basedir for scripts: %s", basedir)
         LOG.debug("Common dirs after setup: %s", ObjUtils.get_class_members(CommonDirs))
         LOG.debug("Common files after setup: %s", ObjUtils.get_class_members(CommonFiles))
@@ -140,11 +140,11 @@ class CdswSetup:
         return env_var_dict
 
     @staticmethod
-    def _setup_python_module_root_and_yarndevtools_path():
+    def _setup_python_module_root_and_main_script_path(module_name: str, main_script_name: str):
         # For CDSW execution, user python module mode is preferred.
         # For test execution, it depends on how the initial-cdsw-setup.sh script was executed in the container.
-        env_value = OsUtils.get_env_value(CdswEnvVar.PYTHON_MODULE_MODE.value, PythonModuleMode.USER.value)
-        python_module_mode = PythonModuleMode[env_value.upper()]
+        module_mode_env = OsUtils.get_env_value(CdswEnvVar.PYTHON_MODULE_MODE.value, PythonModuleMode.USER.value)
+        python_module_mode = PythonModuleMode[module_mode_env.upper()]
 
         LOG.info("Using Python module mode: %s", python_module_mode.value)
         if python_module_mode == PythonModuleMode.GLOBAL:
@@ -155,8 +155,9 @@ class CdswSetup:
             LOG.info("Using user python-site basedir: %s", python_site)
         else:
             raise ValueError("Invalid python module mode: {}".format(python_module_mode))
-        CommonDirs.YARN_DEV_TOOLS_MODULE_ROOT = FileUtils.join_path(python_site, YARNDEVTOOLS_MODULE_NAME)
-        CommonFiles.YARN_DEV_TOOLS_SCRIPT = os.path.join(CommonDirs.YARN_DEV_TOOLS_MODULE_ROOT, "yarn_dev_tools.py")
+
+        CommonDirs.MODULE_ROOT = FileUtils.join_path(python_site, module_name)
+        CommonFiles.YARN_DEV_TOOLS_SCRIPT = os.path.join(CommonDirs.MODULE_ROOT, main_script_name)
 
 
 class CommonMailConfig:
@@ -275,9 +276,10 @@ class UnitTestResultAggregatorCdswUtils:
         return skip_lines_starting_with
 
     @classmethod
+    # TODO cdsw-separation yarndevtools specific
     def _auto_discover_skip_aggregation_result_file(cls):
         found_with_auto_discovery: str or None = None
-        search_basedir = CommonDirs.YARN_DEV_TOOLS_MODULE_ROOT
+        search_basedir = CommonDirs.MODULE_ROOT
         LOG.info("Looking for file '%s' in basedir: %s", SKIP_AGGREGATION_DEFAULTS_FILENAME, search_basedir)
         results = FileUtils.search_files(search_basedir, SKIP_AGGREGATION_DEFAULTS_FILENAME)
         if not results:
