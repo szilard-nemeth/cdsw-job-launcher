@@ -7,6 +7,7 @@ from pythoncommons.file_utils import FileUtils
 
 SECRET_PROJECTS_DIR = FileUtils.join_path(expanduser("~"), ".secret", "projects", "cloudera")
 PYTHON3 = "python3"
+PROJECT_NAME = "cdsw-job-launcher"
 
 
 # TODO cdsw-separation Move yarndevtools specific stuff from here

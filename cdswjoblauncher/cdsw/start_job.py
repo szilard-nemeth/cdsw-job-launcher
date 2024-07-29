@@ -2,38 +2,31 @@
 import os
 import sys
 
-from cdswjoblauncher.cdsw.cdsw_runner import ArgParser
-
 # THESE FUNCTION DEFINITIONS AND CALL TO fix_pythonpast MUST PRECEDE THE IMPORT OF libreloader: from libreloader import reload_dependencies
 # TODO same as CdswEnvVar.PYTHONPATH --> Migrate
-PYTHONPATH_ENV_VAR = "PYTHONPATH"
+PPATH = "PYTHONPATH"
 
-
-def get_pythonpath():
-    return os.environ[PYTHONPATH_ENV_VAR]
-
-
-def set_env_value(env, value):
-    os.environ[env] = value
 
 
 def add_to_pythonpath(additional_dir):
-    pypath = PYTHONPATH_ENV_VAR
-    if pypath in os.environ:
-        print(f"Old {pypath}: {get_pythonpath()}")
-        set_env_value(pypath, f"{get_pythonpath()}:{additional_dir}")
-        print(f"New {pypath}: {get_pythonpath()}")
+    if PPATH in os.environ:
+        print(f"Old {PPATH}: {os.environ[PPATH]}")
+        os.environ[PPATH] = f"{os.environ[PPATH]}:{additional_dir}"
+        print(f"New {PPATH}: {os.environ[PPATH]}")
     else:
-        print(f"Old {pypath}: not set")
-        set_env_value(pypath, additional_dir)
-        print(f"New {pypath}: {get_pythonpath()}")
+        print(f"Old {PPATH}: not set")
+        os.environ[PPATH] = additional_dir
+        print(f"New {PPATH}: {os.environ[PPATH]}")
     sys.path.append(additional_dir)
     print("Fixed sys.path: " + str(sys.path))
-    print("Fixed PYTHONPATH: " + str(os.environ[pypath]))
+    print("Fixed PYTHONPATH: " + str(os.environ[PPATH]))
 
 
 
 def main():
+    print(f"Name of the script      : {sys.argv[0]=}")
+    print(f"Arguments of the script : {sys.argv[1:]=}")
+
     if len(sys.argv) != 3:
         # TODO cdsw-separation
         raise ValueError("Unexpected number of arguments. "
@@ -53,21 +46,14 @@ def main():
     from libreloader import reload_dependencies  # DO NOT REMOVE !! # noqa: E402
     from libreloader.reload_dependencies import Reloader  # DO NOT REMOVE !! # noqa: E402
 
-    print(f"Name of the script      : {sys.argv[0]=}")
-    print(f"Arguments of the script : {sys.argv[1:]=}")
-    if len(sys.argv) != 2:
-        raise ValueError("Should only have one argument, the name of the job!")
-
     reload_dependencies.Reloader.start(module_name)
 
-
-
     # Get the Python module root
-    module_root = reload_dependencies.Reloader.get_python_module_root()
-    yarn_dev_tools_module_root = os.path.join(module_root, module_name)
+    python_site = reload_dependencies.Reloader.get_python_module_root()
+    module_root = os.path.join(python_site, module_name)
     # TODO cdsw-separation this path is invalid
-    cdsw_runner_path = os.path.join(yarn_dev_tools_module_root, "cdsw", "cdsw_runner.py")
-    print("YARN dev tools module root is: %s", Reloader.MODULE_ROOT)
+    cdsw_runner_path = os.path.join(module_root, "cdsw", "cdsw_runner.py")
+    print("Module root is: %s", Reloader.MODULE_ROOT)
 
     # Start the CDSW runner
     sys.argv.append("--config-dir")

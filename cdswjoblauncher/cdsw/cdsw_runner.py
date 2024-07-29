@@ -220,7 +220,9 @@ class CdswRunner:
 
     def start(self):
         LOG.info("Starting CDSW runner...")
-        setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.module_name, self.cdsw_runner_config.main_script_name, self.cdsw_runner_config.envs)
+        setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.module_name,
+                                                                self.cdsw_runner_config.main_script_name,
+                                                                self.cdsw_runner_config.envs)
         LOG.info("Setup result: %s", setup_result)
         self.job_config: CdswJobConfig = self.cdsw_runner_config.config_reader.read_from_file(
             self.cdsw_runner_config.job_config_file,
@@ -232,7 +234,7 @@ class CdswRunner:
         self._execute_yarndevtools_preparation_steps(setup_result)
 
         for run in self.job_config.runs:
-            self.execute_yarndevtools_script(" ".join(run.main_script_arguments))
+            self.execute_main_script(" ".join(run.main_script_arguments))
             if self.cdsw_runner_config.command_type_session_based:
                 self.execute_command_data_zipper(self.cdsw_runner_config.command_type_name, debug=True)
                 drive_link_html_text = self._upload_command_data_to_google_drive_if_required(run)
@@ -333,8 +335,8 @@ class CdswRunner:
         cmd = f"{BASHX} {script}"
         self._run_command(cmd)
 
-    def execute_yarndevtools_script(self, script_args):
-        cmd = f"{PY3} {CommonFiles.YARN_DEV_TOOLS_SCRIPT} {script_args}"
+    def execute_main_script(self, script_args):
+        cmd = f"{PY3} {CommonFiles.MAIN_SCRIPT} {script_args}"
         self._run_command(cmd)
 
     def _run_command(self, cmd):
@@ -346,13 +348,9 @@ class CdswRunner:
                 cmd, stdout_logger=CMD_LOG, exit_on_nonzero_exitcode=True
             )
 
-    @staticmethod
-    def current_date_formatted():
-        return DateUtils.get_current_datetime()
-
     def execute_command_data_zipper(self, command_type_name: str, debug=False, ignore_filetypes: str = "java js"):
         debug_mode = "--debug" if debug else ""
-        self.execute_yarndevtools_script(
+        self.execute_main_script(
             f"{debug_mode} "
             f"ZIP_LATEST_COMMAND_DATA {command_type_name} "
             f"--dest_dir /tmp "
@@ -381,7 +379,7 @@ class CdswRunner:
             f"--prepend_email_body_with_text '{prepend_text_to_email_body}'" if prepend_text_to_email_body else ""
         )
         send_attachment_param = "--send-attachment" if send_attachment else ""
-        self.execute_yarndevtools_script(
+        self.execute_main_script(
             f"--debug SEND_LATEST_COMMAND_DATA "
             f"{self.common_mail_config.as_arguments()}"
             f'--subject "{subject}" '

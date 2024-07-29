@@ -140,7 +140,7 @@ COMMAND_ARGUMENTS = {
 TESTS_DIR_NAME = "tests"
 
 CDSW_DIRNAME = "cdsw"
-REPO_ROOT_DIRNAME = "yarn-dev-tools"
+REPO_ROOT_DIRNAME = "cdsw-job-launcher"
 LOG = logging.getLogger(__name__)
 
 
@@ -533,8 +533,8 @@ class CdswTestingCommons:
             # When GitHub Actions CI runs the tests, it returns two or more paths,
             # so it's better to define the path by hand.
             # Example of paths: [
-            # '/home/runner/work/yarn-dev-tools/yarn-dev-tools/yarndevtools/cdsw',
-            # '/home/runner/work/yarn-dev-tools/yarn-dev-tools/build/lib/yarndevtools/cdsw'
+            # '/home/runner/work/cdsw-job-launcher/cdsw-job-launcher/cdswjoblauncher/cdsw',
+            # '/home/runner/work/cdsw-job-launcher/cdsw-job-launcher/build/lib/cdswjoblauncher/cdsw'
             # ]
             LOG.debug("Github Actions CI execution, crafting CDSW root dir path manually..")
             github_actions_workspace: str = GitHubUtils.get_workspace_path()

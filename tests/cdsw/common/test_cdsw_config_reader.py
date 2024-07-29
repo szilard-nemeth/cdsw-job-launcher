@@ -14,7 +14,7 @@ from pythoncommons.project_utils import ProjectUtils, ProjectRootDeterminationSt
 from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfigReader
 from tests.cdsw.common.testutils.cdsw_testing_common import CdswTestingCommons
 
-TEST_MODULE_NAME = "testmodule"
+EXAMPLE_MODULE_NAME = "cdswexamplemodule"
 
 VALID_CONFIG_FILE = "cdsw_job_config.py"
 
@@ -29,7 +29,7 @@ class CdswConfigReaderTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         ProjectUtils.set_root_determine_strategy(ProjectRootDeterminationStrategy.COMMON_FILE)
-        ProjectUtils.get_test_output_basedir(TEST_MODULE_NAME)
+        ProjectUtils.get_test_output_basedir(EXAMPLE_MODULE_NAME)
         cls._setup_logging()
         cls.cdsw_testing_commons = CdswTestingCommons()
         cls.configfiles_base_dir = cls.cdsw_testing_commons.get_path_from_test_basedir("common", "configfiles")
@@ -419,7 +419,7 @@ class CdswConfigReaderTest(unittest.TestCase):
             config.runs[0].main_script_arguments,
         )
 
-    def test_config_reader_runconfig_defined_yarn_dev_tools_variable_overrides(self):
+    def test_config_reader_runconfig_defined_main_script_variable_overrides(self):
         self._set_mandatory_env_vars()
         file = self._get_config_file("cdsw_job_config_runconfig_defined_main_script_arguments_variable_overrides.py")
         config = CdswJobConfigReader.read_from_file(file, self.valid_env_vars)

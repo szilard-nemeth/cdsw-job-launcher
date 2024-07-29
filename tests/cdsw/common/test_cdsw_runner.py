@@ -59,9 +59,9 @@ class TestCdswRunner(unittest.TestCase):
         # TODO Investigate this later to check why number of loggers are not correct
         OsUtils.set_env_value("ENABLE_LOGGER_HANDLER_SANITY_CHECK", "False")
 
-        # We need the value of 'CommonFiles.YARN_DEV_TOOLS_SCRIPT'
-        CdswSetup._setup_python_module_root_and_main_script_path()
-        cls.main_script_path = CommonFiles.YARN_DEV_TOOLS_SCRIPT
+        # We need the value of 'CommonFiles.MAIN_SCRIPT'
+        CdswSetup._setup_python_module_root_and_main_script_path("cdswexamplemodule", "main_script.py")
+        cls.main_script_path = CommonFiles.MAIN_SCRIPT
         cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper()
 
     def setUp(self) -> None:
