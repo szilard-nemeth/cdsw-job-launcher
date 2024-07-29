@@ -23,7 +23,7 @@ from tests.cdsw.common.testutils.cdsw_testing_common import (
     CdswTestingCommons,
     FakeGoogleDriveCdswHelper,
 )
-from yarndevtools.constants import YARNDEVTOOLS_MODULE_NAME
+TEST_MODULE_NAME = "testmodule"
 
 from tests.cdsw.common.testutils.test_utilities import Object
 
@@ -294,7 +294,7 @@ class TestCdswRunner(unittest.TestCase):
         # Assert there are no more calls
         self.assertTrue(
             len(calls_of_main_script) == 5,
-            msg="Unexpected calls of yarndevtools: {}. First 5 calls are okay.".format(calls_of_main_script),
+            msg="Unexpected calls of main script: {}. First 5 calls are okay.".format(calls_of_main_script),
         )
         self.assertTrue(
             len(calls_of_google_drive_uploader) == 1,
@@ -416,7 +416,7 @@ class TestCdswRunner(unittest.TestCase):
         )
         self.assertTrue(
             len(calls_of_main_script) == 0,
-            msg="Unexpected calls to yarndevtools.py: {}".format(calls_of_main_script),
+            msg="Unexpected calls to main script: {}".format(calls_of_main_script),
         )
 
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
@@ -464,7 +464,7 @@ class TestCdswRunner(unittest.TestCase):
             msg="Unexpected calls to Google Drive uploader: {}".format(calls_of_google_drive_uploader),
         )
         expected_local_file_name = FileUtils.join_path(
-            ProjectUtils.get_output_basedir(YARNDEVTOOLS_MODULE_NAME), "latest-command-data-zip-reviewsync"
+            ProjectUtils.get_output_basedir(TEST_MODULE_NAME), "latest-command-data-zip-reviewsync"
         )
         expected_google_drive_file_name = FileUtils.join_path(
             cdsw_runner.drive_cdsw_helper.drive_command_data_basedir, "reviewsync", "testGoogleDriveApiFilename"

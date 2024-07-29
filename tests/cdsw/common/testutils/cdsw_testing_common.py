@@ -17,11 +17,11 @@ from pythoncommons.github_utils import GitHubUtils
 from pythoncommons.object_utils import ObjUtils
 from pythoncommons.project_utils import SimpleProjectUtils
 
-from tests.test_utilities import Object
-from yarndevtools.constants import YARNDEVTOOLS_MODULE_NAME, PYTHON3
+TEST_MODULE_NAME = "testmodule"
 
-from cdswjoblauncher.cdsw.cdsw_common import GoogleDriveCdswHelper
-from cdswjoblauncher.cdsw.constants import SECRET_PROJECTS_DIR
+from cdswjoblauncher.cdsw.cdsw_common import GoogleDriveCdswHelper, CDSW_PROJECT
+from cdswjoblauncher.cdsw.constants import SECRET_PROJECTS_DIR, PYTHON3
+from tests.cdsw.common.testutils.test_utilities import Object
 
 MANY_PARAMS = 9999
 
@@ -146,6 +146,7 @@ LOG = logging.getLogger(__name__)
 
 class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
     def __init__(self):
+        super().__init__()
         with patch("googleapiwrapper.google_drive.DriveApiWrapper._build_service") as mock_build_service:
             mock_service = Mock()
             mock_service.files.return_value = ["file1", "file2"]
@@ -156,7 +157,7 @@ class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
             )
             self.drive_wrapper = DriveApiWrapper(self.authorizer, session_settings=session_settings)
             self.drive_command_data_basedir = FileUtils.join_path(
-                "/tmp", YARNDEVTOOLS_MODULE_NAME, CDSW_PROJECT, "command-data"
+                "/tmp", TEST_MODULE_NAME, CDSW_PROJECT, "command-data"
             )
 
     def create_authorizer(self):
@@ -176,7 +177,7 @@ class LocalDirs:
     CDSW_ROOT_DIR = None
     CDSW_TESTS_DIR = None
     SCRIPTS_DIR = None
-    YARNDEVTOOLS_RESULT_DIR = None
+    TEST_MODULE_RESULT_DIR = None
     CDSW_SECRET_DIR = FileUtils.join_path(SECRET_PROJECTS_DIR, CDSW_DIRNAME)
 
 
@@ -521,7 +522,7 @@ class CdswTestingCommons:
             exclude_dirs=["venv", "build"],
         )
         LocalDirs.SCRIPTS_DIR = FileUtils.join_path(LocalDirs.CDSW_ROOT_DIR, "scripts")
-        LocalDirs.YARNDEVTOOLS_RESULT_DIR = FileUtils.join_path(LocalDirs.CDSW_ROOT_DIR, "yarndevtools-results")
+        LocalDirs.TEST_MODULE_RESULT_DIR = FileUtils.join_path(LocalDirs.CDSW_ROOT_DIR, "testmodule-results")
         LOG.info("Local dirs: %s", ObjUtils.get_static_fields_with_values(LocalDirs))
 
     def get_path_from_test_basedir(self, *path_components):
@@ -537,12 +538,12 @@ class CdswTestingCommons:
             # ]
             LOG.debug("Github Actions CI execution, crafting CDSW root dir path manually..")
             github_actions_workspace: str = GitHubUtils.get_workspace_path()
-            return FileUtils.join_path(github_actions_workspace, YARNDEVTOOLS_MODULE_NAME, CDSW_DIRNAME)
+            return FileUtils.join_path(github_actions_workspace, TEST_MODULE_NAME, CDSW_DIRNAME)
 
         LOG.debug("Normal test execution, finding project dir..")
         return SimpleProjectUtils.get_project_dir(
             basedir=LocalDirs.REPO_ROOT_DIR,
-            parent_dir=YARNDEVTOOLS_MODULE_NAME,
+            parent_dir=TEST_MODULE_NAME,
             dir_to_find=CDSW_DIRNAME,
             find_result_type=FindResultType.DIRS,
             exclude_dirs=["venv", "build"],

@@ -166,7 +166,7 @@ class CdswConfigReaderTest(unittest.TestCase):
             in str(exc_msg)
         )
 
-    def test_config_reader_if_optional_arg_is_mapped_to_yarndevtools_args_it_becomes_mandatory(self):
+    def test_config_reader_if_optional_arg_is_mapped_to_main_script_args_it_becomes_mandatory(self):
         self._set_mandatory_env_vars()
         del os.environ["GSHEET_JIRA_COLUMN"]
         # "GSHEET_JIRA_COLUMN" is intentionally deleted!
