@@ -160,7 +160,7 @@ class TestCdswRunner(unittest.TestCase):
         args, reviewsync_config_file_path = self._create_args_for_auto_discovery(dry_run=True)
         config = CdswRunnerConfig(self.parser, args)
 
-        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type)
+        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type_real_name)
         self.assertTrue(config.dry_run)
         self.assertEqual(ConfigMode.AUTO_DISCOVERY, config.execution_mode)
         self.assertEqual(reviewsync_config_file_path, config.job_config_file)
@@ -169,7 +169,7 @@ class TestCdswRunner(unittest.TestCase):
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=True)
         config = CdswRunnerConfig(self.parser, args)
 
-        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type)
+        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type_real_name)
         self.assertTrue(config.dry_run)
         self.assertEqual(ConfigMode.SPECIFIED_CONFIG_FILE, config.execution_mode)
         self.assertEqual(FAKE_CONFIG_FILE, config.job_config_file)

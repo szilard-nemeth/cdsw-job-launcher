@@ -4,7 +4,7 @@ import os
 import site
 import sys
 from enum import Enum
-from typing import Dict, List
+from typing import Dict
 
 # https://stackoverflow.com/a/50255019/1106893
 from googleapiwrapper.common import ServiceType
@@ -64,6 +64,8 @@ class CommonDirs:
     CDSW_BASEDIR = FileUtils.join_path("home", "cdsw")
     SCRIPTS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "scripts")
     JOBS_BASEDIR = os.path.join(CDSW_BASEDIR, "jobs")
+    HADOOP_UPSTREAM_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "repos", "apache", "hadoop")
+    HADOOP_CLOUDERA_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "repos", "cloudera", "hadoop")
     USER_DEV_ROOT = FileUtils.join_path("/", "Users", "snemeth", "development")
     MODULE_ROOT = None
 
