@@ -43,7 +43,7 @@ class FakeCdswRunner(CdswRunner):
         super().__init__(config)
 
     def create_google_drive_cdsw_helper(self):
-        return FakeGoogleDriveCdswHelper()
+        return FakeGoogleDriveCdswHelper(self.cdsw_runner_config.module_name)
 
 
 class TestCdswRunner(unittest.TestCase):
@@ -60,9 +60,10 @@ class TestCdswRunner(unittest.TestCase):
         OsUtils.set_env_value("ENABLE_LOGGER_HANDLER_SANITY_CHECK", "False")
 
         # We need the value of 'CommonFiles.MAIN_SCRIPT'
-        CdswSetup._setup_python_module_root_and_main_script_path("cdswexamplemodule", "main_script.py")
+        module_name = "cdswexamplemodule"
+        CdswSetup._setup_python_module_root_and_main_script_path(module_name, "main_script.py")
         cls.main_script_path = CommonFiles.MAIN_SCRIPT
-        cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper()
+        cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper(module_name)
 
     def setUp(self) -> None:
         self.tmp_dir_name = None

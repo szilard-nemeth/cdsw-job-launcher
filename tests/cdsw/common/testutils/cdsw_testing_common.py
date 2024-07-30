@@ -145,8 +145,8 @@ LOG = logging.getLogger(__name__)
 
 
 class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, module_name: str):
+        super().__init__(module_name)
         with patch("googleapiwrapper.google_drive.DriveApiWrapper._build_service") as mock_build_service:
             mock_service = Mock()
             mock_service.files.return_value = ["file1", "file2"]
@@ -330,7 +330,7 @@ class CommandExpectations:
                             "Argument '{}' for commandType '{}' was expected to have 1 argument. Found: {}".format(
                                 arg,
                                 self.command_type,
-                                CommandExpectations._extract_param_count_for_arg(self.command_type, arg),
+                                self._extract_param_count_for_arg(self.command_type, arg),
                             )
                         )
                     result[arg_name] = set(split[1:])
