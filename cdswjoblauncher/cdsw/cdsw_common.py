@@ -28,7 +28,6 @@ from pythoncommons.project_utils import (
     PROJECTS_BASEDIR,
     PROJECTS_BASEDIR_NAME,
 )
-from yarndevtools.constants import YARNDEVTOOLS_MODULE_NAME
 from cdswjoblauncher.cdsw.constants import CdswEnvVar, SECRET_PROJECTS_DIR, PROJECT_NAME
 
 
@@ -172,14 +171,14 @@ class CommonMailConfig:
 
 
 class GoogleDriveCdswHelper:
-    def __init__(self):
+    def __init__(self, module_name: str):
         self.authorizer = self.create_authorizer()
         session_settings = DriveApiWrapperSessionSettings(
             FileFindMode.JUST_UNTRASHED, DuplicateFileWriteResolutionMode.FAIL_FAST, enable_path_cache=True
         )
         self.drive_wrapper = DriveApiWrapper(self.authorizer, session_settings=session_settings)
         self.drive_command_data_basedir = FileUtils.join_path(
-            PROJECTS_BASEDIR_NAME, YARNDEVTOOLS_MODULE_NAME, CDSW_PROJECT, "command-data"
+            PROJECTS_BASEDIR_NAME, module_name, CDSW_PROJECT, "command-data"
         )
 
     def upload(self, cmd_type_real_name: str, local_file_path: str, drive_filename: str) -> DriveApiFile:

@@ -213,7 +213,7 @@ class CdswRunner:
             Tuple[str, str, DriveApiFile]
         ] = []  # Tuple of: (command_type_real_name, drive_filename, drive_api_file)
         self.common_mail_config = CommonMailConfig()
-        self._setup_google_drive()
+        self._setup_google_drive(config.module_name)
         self.cdsw_runner_config = config
         self.dry_run = config.dry_run
 
@@ -305,9 +305,9 @@ class CdswRunner:
             **kwargs,
         )
 
-    def _setup_google_drive(self):
+    def _setup_google_drive(self, module_name: str):
         if OsUtils.is_env_var_true(CdswEnvVar.ENABLE_GOOGLE_DRIVE_INTEGRATION.value, default_val=True):
-            self.drive_cdsw_helper = GoogleDriveCdswHelper()
+            self.drive_cdsw_helper = GoogleDriveCdswHelper(module_name)
         else:
             self.drive_cdsw_helper = None
 
