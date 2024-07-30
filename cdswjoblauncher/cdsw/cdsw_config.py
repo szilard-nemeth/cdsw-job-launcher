@@ -9,7 +9,7 @@ from dacite import from_dict
 from pythoncommons.date_utils import DateUtils
 from pythoncommons.string_utils import auto_str
 
-
+from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult
 from cdswjoblauncher.cdsw.constants import CdswEnvVar
 
 MAIN_SCRIPT_ARGUMENTS_VAR_OVERRIDE_TEMPLATE = "Found argument in main_script_arguments and runconfig.main_script_arguments: '%s'. The latter will take predence."
@@ -252,6 +252,7 @@ class CdswJobConfig:
 
     # Dynamic
     runs_defined_as_callable: bool = False
+    setup_result: CdswSetupResult = None
 
     def __post_init__(self):
         self.resolver: Resolver = None
@@ -272,6 +273,9 @@ class CdswJobConfig:
     def resolve_lambda(self, callable, rfs: ResolvedFieldSpec):
         return self.resolver.resolve_lambda(callable, rfs)
 
+    def get_module_root(self):
+        return self.setup_result.module_root
+
 
 @auto_str
 class CdswJobConfigReader:
@@ -279,12 +283,13 @@ class CdswJobConfigReader:
         self.valid_env_vars = valid_env_vars
 
     @staticmethod
-    def read_from_file(file, command_type_valid_env_vars: List[str]):
+    def read_from_file(file, command_type_valid_env_vars: List[str], setup_result: CdswSetupResult):
         if not file:
             raise ValueError("Config file must be specified!")
         config_reader = CdswJobConfigReader(command_type_valid_env_vars)
         conf_dict = config_reader._read_from_python_conf(file)
         config = from_dict(data_class=CdswJobConfig, data=conf_dict)
+        config.setup_result = setup_result
         config_reader.process_config(config)
         return config
 

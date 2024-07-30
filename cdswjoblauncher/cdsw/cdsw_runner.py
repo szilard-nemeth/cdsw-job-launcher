@@ -111,8 +111,8 @@ class ArgParser:
 
 
 class CdswConfigReaderAdapter:
-    def read_from_file(self, file: str, command_type_valid_env_vars: List[str]):
-        return CdswJobConfigReader.read_from_file(file, command_type_valid_env_vars)
+    def read_from_file(self, file: str, command_type_valid_env_vars: List[str], setup_result: CdswSetupResult):
+        return CdswJobConfigReader.read_from_file(file, command_type_valid_env_vars, setup_result)
 
 
 class CdswRunnerConfig:
@@ -241,7 +241,8 @@ class CdswRunner:
         LOG.info("Setup result: %s", self.setup_result)
         self.job_config: CdswJobConfig = self.cdsw_runner_config.config_reader.read_from_file(
             self.cdsw_runner_config.job_config_file,
-            self.cdsw_runner_config.command_type_valid_env_vars
+            self.cdsw_runner_config.command_type_valid_env_vars,
+            self.setup_result
         )
         self._check_command_type()
         self.output_basedir = self.setup_result.output_basedir

@@ -83,6 +83,7 @@ class CdswSetupResult:
     basedir: str
     output_basedir: str
     env_vars: Dict[str, str]
+    module_root: str
 
 
 class CdswSetup:
@@ -113,7 +114,7 @@ class CdswSetup:
         LOG.info("Using basedir for scripts: %s", basedir)
         LOG.debug("Common dirs after setup: %s", ObjUtils.get_class_members(CommonDirs))
         LOG.debug("Common files after setup: %s", ObjUtils.get_class_members(CommonFiles))
-        return CdswSetupResult(basedir, output_basedir, env_vars)
+        return CdswSetupResult(basedir, output_basedir, env_vars, CommonDirs.MODULE_ROOT)
 
     @staticmethod
     def _determine_basedir():
