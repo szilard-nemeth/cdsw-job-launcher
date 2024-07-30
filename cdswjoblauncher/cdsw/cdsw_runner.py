@@ -3,7 +3,7 @@ import os
 import time
 from argparse import ArgumentParser
 from enum import Enum
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Callable
 
 from googleapiwrapper.google_drive import DriveApiFile
 from pythoncommons.date_utils import DateUtils
@@ -100,6 +100,8 @@ class ArgParser:
         parser.add_argument("--module-name", type=str, help="Name of the module to load for CDSW execution")
         parser.add_argument("--main-script-name", type=str, help="Name of the main script from the module to execute on CDSW")
 
+        parser.add_argument("--job-preparation-callback", action="append", required=False)
+
         args = parser.parse_args()
         if args.verbose:
             print("Args: " + str(args))
@@ -133,9 +135,9 @@ class CdswRunnerConfig:
         self.hadoop_cloudera_basedir = hadoop_cloudera_basedir
         self.default_email_recipients = args.default_email_recipients
         self.envs: Dict[str, str] = self._parse_envs(args)
+        self.job_preparation_callbacks: List[Callable] = self._parse_job_preparation_callbacks(args)
         self.module_name = args.module_name
-        self.main_script_name= args.main_script_name
-
+        self.main_script_name = args.main_script_name
 
     def _determine_job_config_file_location(self, args):
         if self.execution_mode == ConfigMode.SPECIFIED_CONFIG_FILE:
@@ -183,7 +185,8 @@ class CdswRunnerConfig:
     def __str__(self):
         return f"Full command: {self.full_cmd}\n"
 
-    def _parse_envs(self, args):
+    @staticmethod
+    def _parse_envs(args):
         d = {}
         if args.env:
             for env in args.env:
@@ -192,6 +195,15 @@ class CdswRunnerConfig:
                 split = env.split("=")
                 d[split[0]] = d[split[1]]
         return {}
+
+    @staticmethod
+    def _parse_job_preparation_callbacks(args):
+        result = []
+        callbacks = args.job_preparation_callback
+        for c in callbacks:
+            # TODO cdsw-separation` try to load / convert to callable
+            result.append(c)
+        return result
 
 
 class CdswRunner:
@@ -220,18 +232,21 @@ class CdswRunner:
 
     def start(self):
         LOG.info("Starting CDSW runner...")
-        setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.module_name,
+        self.setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.module_name,
                                                                 self.cdsw_runner_config.main_script_name,
                                                                 self.cdsw_runner_config.envs)
-        LOG.info("Setup result: %s", setup_result)
+        LOG.info("Setup result: %s", self.setup_result)
         self.job_config: CdswJobConfig = self.cdsw_runner_config.config_reader.read_from_file(
             self.cdsw_runner_config.job_config_file,
             self.cdsw_runner_config.command_type_valid_env_vars
         )
         self._check_command_type()
-        self.output_basedir = setup_result.output_basedir
-        LOG.info("Setup result: %s", setup_result)
-        self._execute_yarndevtools_preparation_steps(setup_result)
+        self.output_basedir = self.setup_result.output_basedir
+        LOG.info("Setup result: %s", self.setup_result)
+
+        for callback in self.cdsw_runner_config.job_preparation_callbacks:
+            LOG.info("Calling job preparation callback: %s", callback)
+            callback(self, self.job_config, self.setup_result)
 
         for run in self.job_config.runs:
             self.execute_main_script(" ".join(run.main_script_arguments))
@@ -290,56 +305,22 @@ class CdswRunner:
             **kwargs,
         )
 
-    def _execute_yarndevtools_preparation_steps(self, setup_result):
-        # TODO cdsw-separation move this to yarndevtools
-        # TODO cdsw-separation FIX
-        if self.job_config.command_type == "jira_umbrella_data_fetcher":
-            self.execute_clone_downstream_repos_script(setup_result.basedir)
-            self.execute_clone_upstream_repos_script(setup_result.basedir)
-        elif self.job_config.command_type == "branch_comparator":
-            repo_type_env = OsUtils.get_env_value(
-                BranchComparatorEnvVar.BRANCH_COMP_REPO_TYPE.value, RepoType.DOWNSTREAM.value
-            )
-            repo_type: RepoType = RepoType[repo_type_env.upper()]
-
-            if repo_type == RepoType.DOWNSTREAM:
-                self.execute_clone_downstream_repos_script(setup_result.basedir)
-            elif repo_type == RepoType.UPSTREAM:
-                # If we are in upstream mode, make sure downstream dir exist
-                # Currently, yarndevtools requires both repos to be present when initializing.
-                # BranchComparator is happy with one single repository, upstream or downstream, exclusively.
-                # Git init the other repository so everything will be alright
-                FileUtils.create_new_dir(self.cdsw_runner_config.hadoop_cloudera_basedir, fail_if_created=False)
-                FileUtils.change_cwd(self.cdsw_runner_config.hadoop_cloudera_basedir)
-                os.system("git init")
-                self.execute_clone_upstream_repos_script(setup_result.basedir)
-
     def _setup_google_drive(self):
         if OsUtils.is_env_var_true(CdswEnvVar.ENABLE_GOOGLE_DRIVE_INTEGRATION.value, default_val=True):
-            self.drive_cdsw_helper = self.create_google_drive_cdsw_helper()
+            self.drive_cdsw_helper = GoogleDriveCdswHelper()
         else:
             self.drive_cdsw_helper = None
 
-    def create_google_drive_cdsw_helper(self):
-        return GoogleDriveCdswHelper()
-
-    def execute_clone_downstream_repos_script(self, basedir):
-        # TODO cdsw-separation should be a param
-        script = os.path.join(basedir, "clone_downstream_repos.sh")
+    def execute_script(self, script_name: str):
+        script = os.path.join(self.setup_result.basedir, script_name)
         cmd = f"{BASHX} {script}"
-        self._run_command(cmd)
-
-    def execute_clone_upstream_repos_script(self, basedir):
-        # TODO cdsw-separation should be a param
-        script = os.path.join(basedir, "clone_upstream_repos.sh")
-        cmd = f"{BASHX} {script}"
-        self._run_command(cmd)
+        self._execute_command(cmd)
 
     def execute_main_script(self, script_args):
         cmd = f"{PY3} {CommonFiles.MAIN_SCRIPT} {script_args}"
-        self._run_command(cmd)
+        self._execute_command(cmd)
 
-    def _run_command(self, cmd):
+    def _execute_command(self, cmd):
         self.executed_commands.append(cmd)
         if self.dry_run:
             LOG.info("[DRY-RUN] Would run command: %s", cmd)

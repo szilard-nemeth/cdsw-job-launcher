@@ -94,11 +94,11 @@ class CdswSetup:
 
         ProjectUtils.set_root_determine_strategy(ProjectRootDeterminationStrategy.SYS_PATH, allow_overwrite=False)
         output_basedir = ProjectUtils.get_output_basedir(
-            YARNDEVTOOLS_MODULE_NAME, basedir=PROJECTS_BASEDIR, project_name_hint=YARNDEVTOOLS_MODULE_NAME
+            module_name, basedir=PROJECTS_BASEDIR, project_name_hint=module_name
         )
         logging_config: SimpleLoggingSetupConfig = SimpleLoggingSetup.init_logger(
             project_name=PROJECT_NAME,
-            logger_name_prefix=YARNDEVTOOLS_MODULE_NAME,
+            logger_name_prefix=module_name,
             execution_mode=ExecutionMode.PRODUCTION,
             console_debug=True,
             sanity_check_number_of_handlers=enable_handler_sanity_check,
@@ -108,7 +108,7 @@ class CdswSetup:
         env_vars = CdswSetup._prepare_env_vars(env_vars)
         basedir = CdswSetup._determine_basedir()
 
-        # This must happen before other operations as it sets: CommonDirs.YARN_DEV_TOOLS_MODULE_ROOT
+        # This must happen before other operations as it sets: CommonDirs.MODULE_ROOT
         CdswSetup._setup_python_module_root_and_main_script_path(module_name, main_script_name)
         LOG.info("Using basedir for scripts: %s", basedir)
         LOG.debug("Common dirs after setup: %s", ObjUtils.get_class_members(CommonDirs))
