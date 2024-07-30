@@ -6,7 +6,7 @@ import sys
 # TODO same as CdswEnvVar.PYTHONPATH --> Migrate
 PPATH = "PYTHONPATH"
 
-
+# TODO cdsw-separation Eliminate this file completely
 
 def add_to_pythonpath(additional_dir):
     if PPATH in os.environ:

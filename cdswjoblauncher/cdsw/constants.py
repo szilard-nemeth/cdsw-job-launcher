@@ -4,10 +4,17 @@ from enum import Enum
 from os.path import expanduser
 
 from pythoncommons.file_utils import FileUtils
+from pythoncommons.project_utils import ProjectUtils
+
+PROJECT_MODULE_NAME = "cdswjoblauncher"
 
 SECRET_PROJECTS_DIR = FileUtils.join_path(expanduser("~"), ".secret", "projects", "cloudera")
 PYTHON3 = "python3"
 PROJECT_NAME = "cdsw-job-launcher"
+
+PROJECT_OUT_ROOT = ProjectUtils.get_output_basedir(
+    PROJECT_MODULE_NAME, project_name_hint=PROJECT_MODULE_NAME
+)
 
 
 # TODO cdsw-separation Move yarndevtools specific stuff from here

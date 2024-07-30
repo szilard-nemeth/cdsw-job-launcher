@@ -13,7 +13,8 @@ from pythoncommons.process import SubprocessCommandRunner
 from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult, CdswSetup, CMD_LOG, GoogleDriveCdswHelper, BASHX, PY3, \
     CommonFiles, CommonMailConfig, CommonDirs
 from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfig, CdswRun, CdswJobConfigReader
-from cdswjoblauncher.cdsw.constants import CdswEnvVar
+from cdswjoblauncher.cdsw.constants import CdswEnvVar, PROJECT_OUT_ROOT
+from cdswjoblauncher.commands.zip_latest_command_data import Config, ZipLatestCommandData
 
 LOG = logging.getLogger(__name__)
 
@@ -251,7 +252,7 @@ class CdswRunner:
         for run in self.job_config.runs:
             self.execute_main_script(" ".join(run.main_script_arguments))
             if self.cdsw_runner_config.command_type_session_based:
-                self.execute_command_data_zipper(self.cdsw_runner_config.command_type_name, debug=True)
+                self.execute_command_data_zipper(self.cdsw_runner_config.command_type_name)
                 drive_link_html_text = self._upload_command_data_to_google_drive_if_required(run)
                 self._send_email_if_required(run, drive_link_html_text)
 
@@ -329,14 +330,30 @@ class CdswRunner:
                 cmd, stdout_logger=CMD_LOG, exit_on_nonzero_exitcode=True
             )
 
-    def execute_command_data_zipper(self, command_type_name: str, debug=False, ignore_filetypes: str = "java js"):
-        debug_mode = "--debug" if debug else ""
-        self.execute_main_script(
-            f"{debug_mode} "
-            f"ZIP_LATEST_COMMAND_DATA {command_type_name} "
-            f"--dest_dir /tmp "
-            f"--ignore-filetypes {ignore_filetypes}"
-        )
+    def execute_command_data_zipper(self, command_type_name: str):
+        # TODO cdsw-separation Migrate ZIP_LATEST_COMMAND_DATA to this project from yarndevtools
+        # TODO cdsw-separation All files to be zipped should be explicitly declared based on CommandType from yarndevtools
+        #   ALL FILES SHOULD BE SPECIFIED VIA CLI
+        # Log link name examples:
+        # latest-log-unit_test_result_aggregator-INFO.log
+        # latest-log-unit_test_result_aggregator-DEBUG.log
+
+        # TODO cdsw-separation This is copied from CommandType.log_link_name --> Better way to specify?
+        log_link_name = f"latest-log-{command_type_name}"
+
+        # TODO cdsw-separation This is copied from CommandType.session_link_name --> Better way to specify?
+        session_link_name = f"latest-session-{command_type_name}"
+
+        input_files = [log_link_name + "*", session_link_name]
+        # TODO cdsw-separation Check old code, when 'dest_filename' was overridden?
+        config = Config(dest_dir="/tmp",
+                        ignore_filetypes=["java js"],
+                        input_files=input_files,
+                        project_basedir=PROJECT_OUT_ROOT,
+                        cmd_type_real_name=command_type_name,
+                        dest_filename=None)
+        command_data_zipper = ZipLatestCommandData(config)
+        command_data_zipper.run()
 
     def upload_command_data_to_drive(self, drive_filename: str) -> DriveApiFile:
         full_file_path_of_cmd_data = FileUtils.join_path(self.output_basedir, self.cdsw_runner_config.command_type_zip_name)
@@ -352,6 +369,7 @@ class CdswRunner:
         prepend_text_to_email_body: str = None,
         send_attachment: bool = True,
     ):
+        # TODO cdsw-separation Migrate SEND_LATEST_COMMAND_DATA to this project from yarndevtools
         if not recipients:
             recipients = self.determine_recipients()
         attachment_filename_val = f"{attachment_filename}" if attachment_filename else ""
