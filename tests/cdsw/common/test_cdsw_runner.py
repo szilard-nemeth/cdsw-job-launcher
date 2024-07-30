@@ -42,9 +42,6 @@ class FakeCdswRunner(CdswRunner):
     def __init__(self, config: CdswRunnerConfig):
         super().__init__(config)
 
-    def create_google_drive_cdsw_helper(self):
-        return FakeGoogleDriveCdswHelper()
-
 
 class TestCdswRunner(unittest.TestCase):
     parser = None

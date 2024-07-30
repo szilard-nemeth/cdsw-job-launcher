@@ -330,7 +330,7 @@ class CommandExpectations:
                             "Argument '{}' for commandType '{}' was expected to have 1 argument. Found: {}".format(
                                 arg,
                                 self.command_type,
-                                CommandExpectations._extract_param_count_for_arg(self.command_type, arg),
+                                self._extract_param_count_for_arg(self.command_type, arg),
                             )
                         )
                     result[arg_name] = set(split[1:])

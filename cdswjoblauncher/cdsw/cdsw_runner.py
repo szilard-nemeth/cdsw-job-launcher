@@ -11,7 +11,7 @@ from pythoncommons.os_utils import OsUtils
 from pythoncommons.process import SubprocessCommandRunner
 
 from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult, CdswSetup, CMD_LOG, GoogleDriveCdswHelper, BASHX, PY3, \
-    CommonFiles, CommonMailConfig, CommonDirs
+    CommonFiles, CommonMailConfig
 from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfig, CdswRun, CdswJobConfigReader
 from cdswjoblauncher.cdsw.constants import CdswEnvVar, PROJECT_OUT_ROOT
 from cdswjoblauncher.commands.send_latest_command_data_in_mail import SendLatestCommandDataInEmailConfig, \

@@ -99,10 +99,8 @@ class SendLatestCommandDataInEmailConfig:
                  email_body_file: str = SummaryFile.HTML.value,
                  prepend_email_body_with_text: str = None):
         """
-        :param args:
-        :type send_attachment: Send command data as email attachment
-        :param attachment_file:
-        :type prepend_email_body_with_text: Prepend the specified text to the email's body.
+        :param send_attachment: Send command data as email attachment
+        :param prepend_email_body_with_text: Prepend the specified text to the email's body.
         :param email_body_file: The specified file from the latest command data zip will be added to the email body.
         """
         self.email: FullEmailConfig = email_conf
