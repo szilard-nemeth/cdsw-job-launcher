@@ -118,7 +118,6 @@ class CdswRunnerConfig:
         parser,
         args,
         config_reader: CdswConfigReaderAdapter = None,
-        hadoop_cloudera_basedir=CommonDirs.HADOOP_CLOUDERA_BASEDIR,
     ):
         self._validate_args(parser, args)
         self.command_type_real_name = args.command_type_real_name
@@ -131,7 +130,6 @@ class CdswRunnerConfig:
         self.job_config_file = self._determine_job_config_file_location(args)
         self.dry_run = args.dry_run
         self.config_reader = config_reader
-        self.hadoop_cloudera_basedir = hadoop_cloudera_basedir
         self.default_email_recipients = args.default_email_recipients
         self.envs: Dict[str, str] = self._parse_envs(args)
         self.job_preparation_callbacks: List[Callable] = self._parse_job_preparation_callbacks(args)
@@ -192,11 +190,14 @@ class CdswRunnerConfig:
                 if "=" not in env:
                     raise ValueError("Invalid env format! Expected format: <env-name>=<env-value>")
                 split = env.split("=")
-                d[split[0]] = d[split[1]]
+                d[split[0]] = split[1]
         return {}
 
     @staticmethod
     def _parse_job_preparation_callbacks(args):
+        if not hasattr(args, "job_preparation_callback") or not args.job_preparation_callback:
+            return []
+
         result = []
         callbacks = args.job_preparation_callback
         for c in callbacks:
@@ -221,7 +222,7 @@ class CdswRunner:
         self.output_basedir = None
 
     def _check_command_type(self):
-        if self.cdsw_runner_config.command_type_name != self.job_config.command_type.name:
+        if self.cdsw_runner_config.command_type_name != self.job_config.command_type:
             raise ValueError(
                 "Specified command line command type is different than job's command type. CLI: {}, Job definition: {}".format(
                     self.cdsw_runner_config.command_type_name, self.job_config.command_type

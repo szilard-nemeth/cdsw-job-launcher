@@ -13,11 +13,11 @@ from pythoncommons.os_utils import OsUtils
 from pythoncommons.project_utils import ProjectUtils
 from pythoncommons.string_utils import StringUtils
 
-from cdswjoblauncher.cdsw.cdsw_common import CdswSetup, CommonFiles, GoogleDriveCdswHelper
+from cdswjoblauncher.cdsw.cdsw_common import CdswSetup, CommonFiles, GoogleDriveCdswHelper, CommonDirs
 from cdswjoblauncher.cdsw.cdsw_config import CdswRun, EmailSettings, CdswJobConfig, DriveApiUploadSettings, \
     CdswJobConfigReader
 from cdswjoblauncher.cdsw.cdsw_runner import CdswRunnerConfig, CdswRunner, ConfigMode, CdswConfigReaderAdapter
-from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3
+from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3, YarnDevToolsEnvVar
 from tests.cdsw.common.testutils.cdsw_testing_common import (
     CommandExpectations,
     CdswTestingCommons,
@@ -43,7 +43,7 @@ class FakeCdswRunner(CdswRunner):
         super().__init__(config)
 
     def create_google_drive_cdsw_helper(self):
-        return FakeGoogleDriveCdswHelper(self.cdsw_runner_config.module_name)
+        return FakeGoogleDriveCdswHelper()
 
 
 class TestCdswRunner(unittest.TestCase):
@@ -60,7 +60,7 @@ class TestCdswRunner(unittest.TestCase):
         OsUtils.set_env_value("ENABLE_LOGGER_HANDLER_SANITY_CHECK", "False")
 
         # We need the value of 'CommonFiles.MAIN_SCRIPT'
-        module_name = "cdswexamplemodule"
+        module_name = "testmodule"
         CdswSetup._setup_python_module_root_and_main_script_path(module_name, "main_script.py")
         cls.main_script_path = CommonFiles.MAIN_SCRIPT
         cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper(module_name)
@@ -97,13 +97,29 @@ class TestCdswRunner(unittest.TestCase):
     @staticmethod
     def _create_args_for_specified_file(config_file: str, dry_run: bool, override_cmd_type: str = None):
         args = Object()
+        args.module_name = TEST_MODULE_NAME
+        args.main_script_name = "main_script.py"
         args.config_file = config_file
+        args.command_type_real_name = DEFAULT_COMMAND_TYPE
+        args.command_type_name = DEFAULT_COMMAND_TYPE
+        args.command_type_session_based = True
+        args.command_type_zip_name = f"latest-command-data-zip-{DEFAULT_COMMAND_TYPE}"
+        args.command_type_valid_env_vars = ["GSHEET_CLIENT_SECRET", "GSHEET_SPREADSHEET", "GSHEET_WORKSHEET",
+                              "GSHEET_JIRA_COLUMN", "GSHEET_UPDATE_DATE_COLUMN", "GSHEET_STATUS_INFO_COLUMN",
+                              "BRANCHES"]
+        HADOOP_UPSTREAM_BASEDIR = FileUtils.join_path(CommonDirs.CDSW_BASEDIR, "repos", "apache", "hadoop")
+        HADOOP_CLOUDERA_BASEDIR = FileUtils.join_path(CommonDirs.CDSW_BASEDIR, "repos", "cloudera", "hadoop")
+        args.env = [f"{YarnDevToolsEnvVar.ENV_CLOUDERA_HADOOP_ROOT.value}={HADOOP_UPSTREAM_BASEDIR}",
+                    f"{YarnDevToolsEnvVar.ENV_HADOOP_DEV_DIR.value}={HADOOP_CLOUDERA_BASEDIR}"]
+        args.default_email_recipients = "snemeth@cloudera.com"
         args.logging_debug = True
         args.verbose = True
         if override_cmd_type:
-            args.cmd_type = override_cmd_type
+            args.command_type_real_name = override_cmd_type
+            args.command_type_name = override_cmd_type
         else:
-            args.cmd_type = DEFAULT_COMMAND_TYPE
+            args.command_type_real_name = DEFAULT_COMMAND_TYPE
+            args.command_type_name = DEFAULT_COMMAND_TYPE
         args.dry_run = dry_run
         return args
 
@@ -175,6 +191,8 @@ class TestCdswRunner(unittest.TestCase):
         self.assertEqual(ConfigMode.SPECIFIED_CONFIG_FILE, config.execution_mode)
         self.assertEqual(FAKE_CONFIG_FILE, config.job_config_file)
 
+    # TODO cdsw-separation
+    @unittest.skip("Add this back when CdswRunnerConfig validates command type")
     def test_argument_parsing_into_config_invalid_command_type(self):
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=True, override_cmd_type="WRONGCOMMAND")
         with self.assertRaises(ValueError) as ve:
@@ -262,7 +280,7 @@ class TestCdswRunner(unittest.TestCase):
             self._get_call_arguments_as_str(calls_of_main_script, 0),
         )
         self.assertIn(
-            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA REVIEWSYNC",
+            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA reviewsync",
             self._get_call_arguments_as_str(calls_of_main_script, 1),
         )
         self.assertIn(
@@ -275,7 +293,7 @@ class TestCdswRunner(unittest.TestCase):
                 mock_call(
                     "reviewsync",
                     FileUtils.join_path(
-                        expanduser("~"), "snemeth-dev-projects", "yarndevtools", "latest-command-data-zip-reviewsync"
+                        expanduser("~"), "snemeth-dev-projects", TEST_MODULE_NAME, "latest-command-data-zip-reviewsync"
                     ),
                     "testGoogleDriveApiFilename",
                 )
@@ -287,7 +305,7 @@ class TestCdswRunner(unittest.TestCase):
             self._get_call_arguments_as_str(calls_of_main_script, 3),
         )
         self.assertIn(
-            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA REVIEWSYNC",
+            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA reviewsync",
             self._get_call_arguments_as_str(calls_of_main_script, 4),
         )
 

@@ -28,6 +28,7 @@ from pythoncommons.project_utils import (
     PROJECTS_BASEDIR,
     PROJECTS_BASEDIR_NAME,
 )
+
 from cdswjoblauncher.cdsw.constants import CdswEnvVar, SECRET_PROJECTS_DIR, PROJECT_NAME
 
 
@@ -64,8 +65,6 @@ class CommonDirs:
     CDSW_BASEDIR = FileUtils.join_path("home", "cdsw")
     SCRIPTS_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "scripts")
     JOBS_BASEDIR = os.path.join(CDSW_BASEDIR, "jobs")
-    HADOOP_UPSTREAM_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "repos", "apache", "hadoop")
-    HADOOP_CLOUDERA_BASEDIR = FileUtils.join_path(CDSW_BASEDIR, "repos", "cloudera", "hadoop")
     USER_DEV_ROOT = FileUtils.join_path("/", "Users", "snemeth", "development")
     MODULE_ROOT = None
 
