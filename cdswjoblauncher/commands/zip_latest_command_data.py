@@ -9,7 +9,7 @@ from cdswjoblauncher.commands.cmd_type import LATEST_DATA_ZIP_LINK_NAME
 LOG = logging.getLogger(__name__)
 
 
-class Config:
+class CommandDataZipperConfig:
     def __init__(self,
                  dest_dir,
                  ignore_filetypes: List[str],
@@ -35,7 +35,7 @@ class Config:
 
 
 class ZipLatestCommandData:
-    def __init__(self, config: Config):
+    def __init__(self, config: CommandDataZipperConfig):
         self.config = config
         self._check_input_files(config.input_files, config.project_out_root)
 

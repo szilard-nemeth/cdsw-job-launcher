@@ -3,7 +3,7 @@ import os
 import time
 from argparse import ArgumentParser
 from enum import Enum
-from typing import List, Tuple, Dict, Callable
+from typing import List, Tuple, Dict, Callable, Optional
 
 from googleapiwrapper.google_drive import DriveApiFile
 from pythoncommons.file_utils import FileUtils, FindResultType
@@ -14,7 +14,9 @@ from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult, CdswSetup, CMD_LOG
     CommonFiles, CommonMailConfig, CommonDirs
 from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfig, CdswRun, CdswJobConfigReader
 from cdswjoblauncher.cdsw.constants import CdswEnvVar, PROJECT_OUT_ROOT
-from cdswjoblauncher.commands.zip_latest_command_data import Config, ZipLatestCommandData
+from cdswjoblauncher.commands.send_latest_command_data_in_mail import SendLatestCommandDataInEmailConfig, \
+    FullEmailConfig, SendLatestCommandDataInEmail
+from cdswjoblauncher.commands.zip_latest_command_data import CommandDataZipperConfig, ZipLatestCommandData
 
 LOG = logging.getLogger(__name__)
 
@@ -202,7 +204,7 @@ class CdswRunnerConfig:
         result = []
         callbacks = args.job_preparation_callback
         for c in callbacks:
-            # TODO cdsw-separation` try to load / convert to callable
+            # TODO cdsw-separation try to load / convert to callable
             result.append(c)
         return result
 
@@ -262,13 +264,13 @@ class CdswRunner:
                 "Google Drive integration is disabled with env var '%s'!",
                 CdswEnvVar.ENABLE_GOOGLE_DRIVE_INTEGRATION.value,
             )
-            return
+            return None
         if not run.drive_api_upload_settings:
             LOG.info("Google Drive upload settings is not defined for run: %s", run.name)
-            return
+            return None
         if not run.drive_api_upload_settings.enabled:
             LOG.info("Google Drive upload is disabled for run: %s", run.name)
-            return
+            return None
 
         drive_filename = run.drive_api_upload_settings.file_name
         if not self.dry_run:
@@ -283,7 +285,7 @@ class CdswRunner:
             )
             return f'<a href="dummy_link">Command data file: {drive_filename}</a>'
 
-    def _send_email_if_required(self, run: CdswRun, drive_link_html_text: str or None):
+    def _send_email_if_required(self, run: CdswRun, drive_link_html_text: Optional[str]):
         if not run.email_settings:
             LOG.info("Email settings is not defined for run: %s", run.name)
             return
@@ -291,19 +293,13 @@ class CdswRunner:
             LOG.info("Email sending is disabled for run: %s", run.name)
             return
 
-        kwargs = {
-            "attachment_filename": run.email_settings.attachment_file_name,
-            "email_body_file": run.email_settings.email_body_file_from_command_data,
-            "send_attachment": True,
-        }
-        if drive_link_html_text:
-            kwargs["prepend_text_to_email_body"] = drive_link_html_text
-
-        LOG.debug("kwargs for email: %s", kwargs)
         self.send_latest_command_data_in_email(
             sender=run.email_settings.sender,
             subject=run.email_settings.subject,
-            **kwargs,
+            attachment_filename=run.email_settings.attachment_file_name,
+            email_body_file=run.email_settings.email_body_file_from_command_data,
+            send_attachment=True,
+            prepend_text_to_email_body=drive_link_html_text
         )
 
     def _setup_google_drive(self, module_name: str):
@@ -346,12 +342,12 @@ class CdswRunner:
 
         input_files = [log_link_name + "*", session_link_name]
         # TODO cdsw-separation Check old code, when 'dest_filename' was overridden?
-        config = Config(dest_dir="/tmp",
-                        ignore_filetypes=["java js"],
-                        input_files=input_files,
-                        project_basedir=PROJECT_OUT_ROOT,
-                        cmd_type_real_name=command_type_name,
-                        dest_filename=None)
+        config = CommandDataZipperConfig(dest_dir="/tmp",
+                                         ignore_filetypes=["java js"],
+                                         input_files=input_files,
+                                         project_basedir=PROJECT_OUT_ROOT,
+                                         cmd_type_real_name=command_type_name,
+                                         dest_filename=None)
         command_data_zipper = ZipLatestCommandData(config)
         command_data_zipper.run()
 
@@ -361,34 +357,35 @@ class CdswRunner:
 
     def send_latest_command_data_in_email(
         self,
-        sender,
-        subject,
-        recipients=None,
-        attachment_filename=None,
-        email_body_file: str = None,
-        prepend_text_to_email_body: str = None,
+        sender: str,
+        subject: str,
+        recipients: Optional[List[str]] = None,
+        attachment_filename: Optional[str] = None,
+        email_body_file: Optional[str] = None,
+        prepend_text_to_email_body: Optional[str] = None,
         send_attachment: bool = True,
     ):
-        # TODO cdsw-separation Migrate SEND_LATEST_COMMAND_DATA to this project from yarndevtools
+        LOG.debug("Arguments for send_latest_command_data_in_email: %s", locals().keys())
+
         if not recipients:
             recipients = self.determine_recipients()
-        attachment_filename_val = f"{attachment_filename}" if attachment_filename else ""
-        email_body_file_param = f"--file-as-email-body-from-zip {email_body_file}" if email_body_file else ""
-        email_body_prepend_param = (
-            f"--prepend_email_body_with_text '{prepend_text_to_email_body}'" if prepend_text_to_email_body else ""
+
+        email_conf: FullEmailConfig = FullEmailConfig(
+            account_user=self.common_mail_config.account_user,
+            account_password=self.common_mail_config.account_password,
+            smtp_server=self.common_mail_config.smtp_server,
+            smtp_port=self.common_mail_config.smtp_port,
+            sender=sender,
+            recipients=recipients,
+            subject=subject,
+            attachment_filename=attachment_filename
         )
-        send_attachment_param = "--send-attachment" if send_attachment else ""
-        self.execute_main_script(
-            f"--debug SEND_LATEST_COMMAND_DATA "
-            f"{self.common_mail_config.as_arguments()}"
-            f'--subject "{subject}" '
-            f'--sender "{sender}" '
-            f'--recipients "{recipients}" '
-            f"--attachment-filename {attachment_filename_val} "
-            f"{email_body_file_param} "
-            f"{email_body_prepend_param} "
-            f"{send_attachment_param}"
-        )
+        conf = SendLatestCommandDataInEmailConfig(email_conf,
+                                                  send_attachment=send_attachment,
+                                                  email_body_file=email_body_file,
+                                                  prepend_email_body_with_text=prepend_text_to_email_body)
+        send_email_cmd = SendLatestCommandDataInEmail(conf)
+        send_email_cmd.run()
 
     def determine_recipients(self):
         recipients_env = OsUtils.get_env_value(CdswEnvVar.MAIL_RECIPIENTS.value)
