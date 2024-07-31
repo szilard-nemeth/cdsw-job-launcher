@@ -17,6 +17,8 @@ from pythoncommons.github_utils import GitHubUtils
 from pythoncommons.object_utils import ObjUtils
 from pythoncommons.project_utils import SimpleProjectUtils
 
+from cdswjoblauncher.cdsw.cdsw_runner import CdswRunner, CdswRunnerConfig
+
 TEST_MODULE_NAME = "testmodule"
 
 from cdswjoblauncher.cdsw.cdsw_common import GoogleDriveCdswHelper, CDSW_PROJECT
@@ -600,3 +602,8 @@ class CdswTestingCommons:
         instance.upload_file.return_value = "mockedUpload"
         assert MockDriveWrapper() is instance
         assert MockDriveWrapper().upload_file() == "mockedUpload"
+
+
+class FakeCdswRunner(CdswRunner):
+    def __init__(self, config: CdswRunnerConfig):
+        super().__init__(config)

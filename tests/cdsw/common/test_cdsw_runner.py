@@ -16,13 +16,16 @@ from pythoncommons.string_utils import StringUtils
 from cdswjoblauncher.cdsw.cdsw_common import CdswSetup, CommonFiles, GoogleDriveCdswHelper, CommonDirs
 from cdswjoblauncher.cdsw.cdsw_config import CdswRun, EmailSettings, CdswJobConfig, DriveApiUploadSettings, \
     CdswJobConfigReader
-from cdswjoblauncher.cdsw.cdsw_runner import CdswRunnerConfig, CdswRunner, ConfigMode, CdswConfigReaderAdapter
+from cdswjoblauncher.cdsw.cdsw_runner import CdswRunnerConfig, ConfigMode, CdswConfigReaderAdapter
 from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3, YarnDevToolsEnvVar
 from tests.cdsw.common.testutils.cdsw_testing_common import (
     CommandExpectations,
     CdswTestingCommons,
     FakeGoogleDriveCdswHelper,
 )
+
+from cdswjoblauncher.cdsw.testutils.test_utils import FakeCdswRunner
+
 TEST_MODULE_NAME = "testmodule"
 
 from tests.cdsw.common.testutils.test_utilities import Object
@@ -36,11 +39,6 @@ CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH = f"cdswjoblauncher.cdsw.cdsw_common.{
 SUBPROCESSRUNNER_RUN_METHOD_PATH = "pythoncommons.process.SubprocessCommandRunner.run_and_follow_stdout_stderr"
 DRIVE_API_WRAPPER_UPLOAD_PATH = "googleapiwrapper.google_drive.DriveApiWrapper.upload_file"
 LOG = logging.getLogger(__name__)
-
-
-class FakeCdswRunner(CdswRunner):
-    def __init__(self, config: CdswRunnerConfig):
-        super().__init__(config)
 
 
 class TestCdswRunner(unittest.TestCase):
