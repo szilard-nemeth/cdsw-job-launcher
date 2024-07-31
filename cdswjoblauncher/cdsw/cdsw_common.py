@@ -93,10 +93,9 @@ class CdswSetup:
             CdswEnvVar.ENABLE_LOGGER_HANDLER_SANITY_CHECK.value, default_val=True
         )
 
+        # TODO cdsw-separation: Check all usages of "ProjectUtils.", figure out directory structure
         ProjectUtils.set_root_determine_strategy(ProjectRootDeterminationStrategy.SYS_PATH, allow_overwrite=False)
-        output_basedir = ProjectUtils.get_output_basedir(
-            module_name, basedir=PROJECTS_BASEDIR, project_name_hint=module_name
-        )
+        output_basedir = ProjectUtils.get_output_basedir(PROJECT_NAME, basedir=PROJECTS_BASEDIR, project_name_hint=PROJECT_NAME)
         logging_config: SimpleLoggingSetupConfig = SimpleLoggingSetup.init_logger(
             project_name=PROJECT_NAME,
             logger_name_prefix=module_name,

@@ -14,7 +14,7 @@ from pythoncommons.project_utils import ProjectUtils, ProjectRootDeterminationSt
 
 from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult, CdswSetup
 from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfigReader
-from cdswjoblauncher.cdsw.constants import CdswEnvVar
+from cdswjoblauncher.cdsw.constants import CdswEnvVar, PROJECT_NAME
 from cdswjoblauncher.cdsw.testutils.test_utils import CdswTestingCommons, TEST_MODULE_NAME, TEST_MODULE_MAIN_SCRIPT_NAME
 
 VALID_CONFIG_FILE = "cdsw_job_config.py"
@@ -30,7 +30,7 @@ class CdswConfigReaderTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         ProjectUtils.set_root_determine_strategy(ProjectRootDeterminationStrategy.COMMON_FILE)
-        ProjectUtils.get_test_output_basedir(TEST_MODULE_NAME)
+        ProjectUtils.get_test_output_basedir(PROJECT_NAME)
         cls._setup_logging()
         cls.cdsw_testing_commons = CdswTestingCommons(TEST_MODULE_NAME)
         cls.configfiles_base_dir = cls.cdsw_testing_commons.get_path_from_test_basedir("common", "configfiles")

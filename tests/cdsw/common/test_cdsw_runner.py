@@ -19,7 +19,7 @@ from cdswjoblauncher.cdsw.cdsw_common import CdswSetup, CommonFiles, GoogleDrive
 from cdswjoblauncher.cdsw.cdsw_config import CdswRun, EmailSettings, CdswJobConfig, DriveApiUploadSettings, \
     CdswJobConfigReader
 from cdswjoblauncher.cdsw.cdsw_runner import CdswRunnerConfig, ConfigMode, CdswConfigReaderAdapter
-from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3, YarnDevToolsEnvVar
+from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3, YarnDevToolsEnvVar, PROJECT_NAME
 
 from cdswjoblauncher.cdsw.testutils.test_utils import FakeCdswRunner, FakeGoogleDriveCdswHelper, CommandExpectations, \
     CdswTestingCommons, Object, TEST_MODULE_NAME, TEST_MODULE_MAIN_SCRIPT_NAME
@@ -290,7 +290,7 @@ class TestCdswRunner(unittest.TestCase):
                 mock_call(
                     "reviewsync",
                     FileUtils.join_path(
-                        expanduser("~"), "snemeth-dev-projects", TEST_MODULE_NAME, "latest-command-data-zip-reviewsync"
+                        expanduser("~"), "snemeth-dev-projects", PROJECT_NAME, "latest-command-data-zip-reviewsync"
                     ),
                     "testGoogleDriveApiFilename",
                 )
@@ -490,7 +490,7 @@ class TestCdswRunner(unittest.TestCase):
             msg="Unexpected calls to Google Drive uploader: {}".format(calls_of_google_drive_uploader),
         )
         expected_local_file_name = FileUtils.join_path(
-            ProjectUtils.get_output_basedir(TEST_MODULE_NAME), "latest-command-data-zip-reviewsync"
+            ProjectUtils.get_output_basedir(PROJECT_NAME), "latest-command-data-zip-reviewsync"
         )
         expected_google_drive_file_name = FileUtils.join_path(
             cdsw_runner.drive_cdsw_helper.drive_command_data_basedir, "reviewsync", "testGoogleDriveApiFilename"
@@ -508,11 +508,9 @@ class TestCdswRunner(unittest.TestCase):
             print("Side effect for Mock subprocess runner is started")
 
             # Set up latest session dir
-            output_dir = ProjectUtils.get_output_child_dir("reviewsync", project_name_hint=TEST_MODULE_NAME)
-            session_dir = ProjectUtils.get_session_dir_under_child_dir(FileUtils.basename(output_dir))
-            project_out_root = ProjectUtils.get_output_basedir(
-                TEST_MODULE_NAME, project_name_hint=TEST_MODULE_NAME
-            )
+            output_dir = ProjectUtils.get_test_output_child_dir("reviewsync", project_name_hint=PROJECT_NAME)
+            session_dir = ProjectUtils.get_test_session_dir_under_child_dir(FileUtils.basename(output_dir))
+            project_out_root = ProjectUtils.get_output_basedir(PROJECT_NAME, project_name_hint=PROJECT_NAME)
             FileUtils.create_symlink_path_dir(
                 "latest-session-reviewsync",
                 session_dir,
