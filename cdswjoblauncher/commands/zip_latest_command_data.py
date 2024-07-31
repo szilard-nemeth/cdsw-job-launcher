@@ -37,7 +37,6 @@ class CommandDataZipperConfig:
 class ZipLatestCommandData:
     def __init__(self, config: CommandDataZipperConfig):
         self.config = config
-        self._check_input_files(config.input_files, config.project_out_root)
 
     @property
     def cmd_type(self):
@@ -79,6 +78,7 @@ class ZipLatestCommandData:
             f"Destination filename: {self.config.dest_filename}\n "
             f"Ignore file types: {self.config.ignore_filetypes}\n "
         )
+        self.config.input_files = self._check_input_files(self.config.input_files, self.config.project_out_root)
 
         zip_file_name, temp_dir_dest = ZipFileUtils.create_zip_file_advanced(
             self.config.input_files, self.config.dest_filename, self.config.ignore_filetypes, self.config.output_dir

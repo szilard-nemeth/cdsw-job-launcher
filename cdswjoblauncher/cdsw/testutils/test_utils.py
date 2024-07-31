@@ -20,6 +20,7 @@ from pythoncommons.project_utils import SimpleProjectUtils
 from cdswjoblauncher.cdsw.cdsw_runner import CdswRunner, CdswRunnerConfig
 
 TEST_MODULE_NAME = "testmodule"
+TEST_MODULE_MAIN_SCRIPT_NAME = "main_script.py"
 
 from cdswjoblauncher.cdsw.cdsw_common import GoogleDriveCdswHelper, CDSW_PROJECT
 from cdswjoblauncher.cdsw.constants import SECRET_PROJECTS_DIR, PYTHON3, PROJECT_MODULE_NAME

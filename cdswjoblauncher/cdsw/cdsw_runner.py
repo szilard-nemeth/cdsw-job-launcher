@@ -13,7 +13,7 @@ from pythoncommons.process import SubprocessCommandRunner
 from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult, CdswSetup, CMD_LOG, GoogleDriveCdswHelper, BASHX, PY3, \
     CommonFiles, CommonMailConfig
 from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfig, CdswRun, CdswJobConfigReader
-from cdswjoblauncher.cdsw.constants import CdswEnvVar, PROJECT_OUT_ROOT
+from cdswjoblauncher.cdsw.constants import CdswEnvVar
 from cdswjoblauncher.commands.send_latest_command_data_in_mail import SendLatestCommandDataInEmailConfig, \
     FullEmailConfig, SendLatestCommandDataInEmail
 from cdswjoblauncher.commands.zip_latest_command_data import CommandDataZipperConfig, ZipLatestCommandData
@@ -346,10 +346,14 @@ class CdswRunner:
         config = CommandDataZipperConfig(dest_dir="/tmp",
                                          ignore_filetypes=["java js"],
                                          input_files=input_files,
-                                         project_basedir=PROJECT_OUT_ROOT,
+                                         project_basedir=self.output_basedir,
                                          cmd_type_real_name=command_type_name,
                                          dest_filename=None)
         command_data_zipper = ZipLatestCommandData(config)
+
+        if self.dry_run:
+            LOG.info("[DRY-RUN] Would run ZipLatestCommandData with config: %s", config)
+            return
         command_data_zipper.run()
 
     def upload_command_data_to_drive(self, drive_filename: str) -> DriveApiFile:
@@ -385,14 +389,31 @@ class CdswRunner:
                                                   send_attachment=send_attachment,
                                                   email_body_file=email_body_file,
                                                   prepend_email_body_with_text=prepend_text_to_email_body)
+
+        if self.dry_run:
+            LOG.info("[DRY-RUN] Would run SendLatestCommandDataInEmail with config: %s", conf)
+            return
+
         send_email_cmd = SendLatestCommandDataInEmail(conf)
         send_email_cmd.run()
 
     def determine_recipients(self):
+        def as_list(r):
+            if isinstance(r, str):
+                if "," in r:
+                    return r.split(",")
+                return [r]
+            elif isinstance(r, list):
+                return r
+            else:
+                raise ValueError(f"Unexpected type for recipients: {type(r)}")
+
         recipients_env = OsUtils.get_env_value(CdswEnvVar.MAIL_RECIPIENTS.value)
         if recipients_env:
-            return recipients_env
-        return self.cdsw_runner_config.default_email_recipients
+            return as_list(recipients_env)
+        return as_list(self.cdsw_runner_config.default_email_recipients)
+
+
 
     @property
     def is_drive_integration_enabled(self):

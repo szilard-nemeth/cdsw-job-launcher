@@ -12,10 +12,6 @@ SECRET_PROJECTS_DIR = FileUtils.join_path(expanduser("~"), ".secret", "projects"
 PYTHON3 = "python3"
 PROJECT_NAME = "cdsw-job-launcher"
 
-PROJECT_OUT_ROOT = ProjectUtils.get_output_basedir(
-    PROJECT_MODULE_NAME, project_name_hint=PROJECT_MODULE_NAME
-)
-
 
 # TODO cdsw-separation Move yarndevtools specific stuff from here
 class YarnDevToolsEnvVar(Enum):

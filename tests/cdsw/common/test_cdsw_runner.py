@@ -1,6 +1,8 @@
 import argparse
 import logging
 import os
+import random
+import string
 import tempfile
 import unittest
 from os.path import expanduser
@@ -18,17 +20,9 @@ from cdswjoblauncher.cdsw.cdsw_config import CdswRun, EmailSettings, CdswJobConf
     CdswJobConfigReader
 from cdswjoblauncher.cdsw.cdsw_runner import CdswRunnerConfig, ConfigMode, CdswConfigReaderAdapter
 from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3, YarnDevToolsEnvVar
-from tests.cdsw.common.testutils.cdsw_testing_common import (
-    CommandExpectations,
-    CdswTestingCommons,
-    FakeGoogleDriveCdswHelper,
-)
 
-from cdswjoblauncher.cdsw.testutils.test_utils import FakeCdswRunner
-
-TEST_MODULE_NAME = "testmodule"
-
-from tests.cdsw.common.testutils.test_utilities import Object
+from cdswjoblauncher.cdsw.testutils.test_utils import FakeCdswRunner, FakeGoogleDriveCdswHelper, CommandExpectations, \
+    CdswTestingCommons, Object, TEST_MODULE_NAME, TEST_MODULE_MAIN_SCRIPT_NAME
 
 FAKE_CONFIG_FILE = "fake-config-file.py"
 REVIEWSYNC_CONFIG_FILE_NAME = "reviewsync_job_config.py"
@@ -38,6 +32,7 @@ CDSW_CONFIG_READER_READ_METHOD_PATH = f"cdswjoblauncher.cdsw.cdsw_config.{CdswJo
 CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH = f"cdswjoblauncher.cdsw.cdsw_common.{GoogleDriveCdswHelper.__name__}.upload"
 SUBPROCESSRUNNER_RUN_METHOD_PATH = "pythoncommons.process.SubprocessCommandRunner.run_and_follow_stdout_stderr"
 DRIVE_API_WRAPPER_UPLOAD_PATH = "googleapiwrapper.google_drive.DriveApiWrapper.upload_file"
+SEND_EMAIL_COMMAND_RUN_PATH = "cdswjoblauncher.commands.send_latest_command_data_in_mail.SendLatestCommandDataInEmail.run"
 LOG = logging.getLogger(__name__)
 
 
@@ -55,10 +50,9 @@ class TestCdswRunner(unittest.TestCase):
         OsUtils.set_env_value("ENABLE_LOGGER_HANDLER_SANITY_CHECK", "False")
 
         # We need the value of 'CommonFiles.MAIN_SCRIPT'
-        module_name = "testmodule"
-        CdswSetup._setup_python_module_root_and_main_script_path(module_name, "main_script.py")
+        CdswSetup._setup_python_module_root_and_main_script_path(TEST_MODULE_NAME, TEST_MODULE_MAIN_SCRIPT_NAME)
         cls.main_script_path = CommonFiles.MAIN_SCRIPT
-        cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper(module_name)
+        cls.fake_google_drive_cdsw_helper = FakeGoogleDriveCdswHelper(TEST_MODULE_NAME)
 
     def setUp(self) -> None:
         self.tmp_dir_name = None
@@ -93,7 +87,7 @@ class TestCdswRunner(unittest.TestCase):
     def _create_args_for_specified_file(config_file: str, dry_run: bool, override_cmd_type: str = None):
         args = Object()
         args.module_name = TEST_MODULE_NAME
-        args.main_script_name = "main_script.py"
+        args.main_script_name = TEST_MODULE_MAIN_SCRIPT_NAME
         args.config_file = config_file
         args.command_type_real_name = DEFAULT_COMMAND_TYPE
         args.command_type_name = DEFAULT_COMMAND_TYPE
@@ -213,47 +207,50 @@ class TestCdswRunner(unittest.TestCase):
             .with_fake_command()
         )
 
-        exp_command_2 = (
-            CommandExpectations(self)
-            .add_expected_ordered_arg("python3")
-            .add_expected_ordered_arg(self.main_script_path)
-            .add_expected_ordered_arg("ZIP_LATEST_COMMAND_DATA")
-            .add_expected_ordered_arg("REVIEWSYNC")
-            .add_expected_arg("--debug")
-            .add_expected_arg("--dest_dir", "/tmp")
-            .add_expected_arg("--ignore-filetypes", "java js")
-            .with_command_type("zip_latest_command_data")
-        )
-        wrap_d = StringUtils.wrap_to_quotes
-        wrap_s = StringUtils.wrap_to_single_quotes
-        expected_html_link = wrap_s('<a href="dummy_link">Command data file: testGoogleDriveApiFilename</a>')
-        exp_command_3 = (
-            CommandExpectations(self)
-            .add_expected_ordered_arg("python3")
-            .add_expected_ordered_arg(self.main_script_path)
-            .add_expected_ordered_arg("SEND_LATEST_COMMAND_DATA")
-            .add_expected_arg("--debug")
-            .add_expected_arg("--smtp_server", wrap_d("smtp.gmail.com"))
-            .add_expected_arg("--smtp_port", "465")
-            .add_expected_arg("--account_user", wrap_d("mailUser"))
-            .add_expected_arg("--account_password", wrap_d("mailPassword"))
-            .add_expected_arg("--subject", wrap_d("testSubject"))
-            .add_expected_arg("--sender", wrap_d("testSender"))
-            .add_expected_arg("--recipients", wrap_d("yarn_eng_bp@cloudera.com"))
-            .add_expected_arg("--attachment-filename", "test_attachment_filename.zip")
-            .add_expected_arg("--file-as-email-body-from-zip", "test")
-            .add_expected_arg("--prepend_email_body_with_text", expected_html_link)
-            .add_expected_arg("--send-attachment")
-            .with_command_type("send_latest_command_data")
-        )
+        # TODO cdsw-separation Zip latest command data and send latest command data validation should be performed with mocking, not CLI command
+        # exp_command_2 = (
+        #     CommandExpectations(self)
+        #     .add_expected_ordered_arg("python3")
+        #     .add_expected_ordered_arg(self.main_script_path)
+        #     .add_expected_ordered_arg("ZIP_LATEST_COMMAND_DATA")
+        #     .add_expected_ordered_arg("REVIEWSYNC")
+        #     .add_expected_arg("--debug")
+        #     .add_expected_arg("--dest_dir", "/tmp")
+        #     .add_expected_arg("--ignore-filetypes", "java js")
+        #     .with_command_type("zip_latest_command_data")
+        # )
+        # wrap_d = StringUtils.wrap_to_quotes
+        # wrap_s = StringUtils.wrap_to_single_quotes
+        # expected_html_link = wrap_s('<a href="dummy_link">Command data file: testGoogleDriveApiFilename</a>')
+        # exp_command_3 = (
+        #     CommandExpectations(self)
+        #     .add_expected_ordered_arg("python3")
+        #     .add_expected_ordered_arg(self.main_script_path)
+        #     .add_expected_ordered_arg("SEND_LATEST_COMMAND_DATA")
+        #     .add_expected_arg("--debug")
+        #     .add_expected_arg("--smtp_server", wrap_d("smtp.gmail.com"))
+        #     .add_expected_arg("--smtp_port", "465")
+        #     .add_expected_arg("--account_user", wrap_d("mailUser"))
+        #     .add_expected_arg("--account_password", wrap_d("mailPassword"))
+        #     .add_expected_arg("--subject", wrap_d("testSubject"))
+        #     .add_expected_arg("--sender", wrap_d("testSender"))
+        #     .add_expected_arg("--recipients", wrap_d("yarn_eng_bp@cloudera.com"))
+        #     .add_expected_arg("--attachment-filename", "test_attachment_filename.zip")
+        #     .add_expected_arg("--file-as-email-body-from-zip", "test")
+        #     .add_expected_arg("--prepend_email_body_with_text", expected_html_link)
+        #     .add_expected_arg("--send-attachment")
+        #     .with_command_type("send_latest_command_data")
+        # )
 
-        expectations = [exp_command_1, exp_command_2, exp_command_3]
+        expectations = [exp_command_1, ]
         CdswTestingCommons.verify_commands(self, expectations, cdsw_runner.executed_commands)
 
     @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
+    @patch(SEND_EMAIL_COMMAND_RUN_PATH)
     def test_execute_two_runs_with_fake_args(
         self,
+        mock_send_email_command_run,
         mock_google_drive_cdsw_helper_upload,
         mock_subprocess_runner,
     ):
@@ -265,23 +262,27 @@ class TestCdswRunner(unittest.TestCase):
         mock_job_config = self._create_mock_job_config([mock_run1, mock_run2])
 
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=False)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
         calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
+
         self.assertIn(
             f"{PYTHON3} {self.main_script_path} --arg1 --arg2 bla --arg3 bla3",
             self._get_call_arguments_as_str(calls_of_main_script, 0),
         )
-        self.assertIn(
-            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA reviewsync",
-            self._get_call_arguments_as_str(calls_of_main_script, 1),
-        )
-        self.assertIn(
-            f"{PYTHON3} {self.main_script_path} --debug SEND_LATEST_COMMAND_DATA",
-            self._get_call_arguments_as_str(calls_of_main_script, 2),
-        )
+        # TODO cdsw-separation Zip latest command data and send latest command data validation should be performed with mocking, not CLI command
+        # self.assertIn(
+        #     f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA reviewsync",
+        #     self._get_call_arguments_as_str(calls_of_main_script, 1),
+        # )
+        # TODO cdsw-separation Zip latest command data and send latest command data validation should be performed with mocking, not CLI command
+        # self.assertIn(
+        #     f"{PYTHON3} {self.main_script_path} --debug SEND_LATEST_COMMAND_DATA",
+        #     self._get_call_arguments_as_str(calls_of_main_script, 2),
+        # )
         self.assertEqual(
             calls_of_google_drive_uploader,
             [
@@ -297,16 +298,17 @@ class TestCdswRunner(unittest.TestCase):
 
         self.assertIn(
             f"{PYTHON3} {self.main_script_path} --arg1 --arg2 bla --arg3 bla3",
-            self._get_call_arguments_as_str(calls_of_main_script, 3),
+            self._get_call_arguments_as_str(calls_of_main_script, 1),
         )
-        self.assertIn(
-            f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA reviewsync",
-            self._get_call_arguments_as_str(calls_of_main_script, 4),
-        )
+        # TODO cdsw-separation Zip latest command data and send latest command data validation should be performed with mocking, not CLI command
+        # self.assertIn(
+        #     f"{PYTHON3} {self.main_script_path} --debug ZIP_LATEST_COMMAND_DATA reviewsync",
+        #     self._get_call_arguments_as_str(calls_of_main_script, 4),
+        # )
 
         # Assert there are no more calls
         self.assertTrue(
-            len(calls_of_main_script) == 5,
+            len(calls_of_main_script) == 2,
             msg="Unexpected calls of main script: {}. First 5 calls are okay.".format(calls_of_main_script),
         )
         self.assertTrue(
@@ -348,6 +350,7 @@ class TestCdswRunner(unittest.TestCase):
         mock_job_config = self._create_mock_job_config([mock_run1, mock_run2])
 
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=False)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
@@ -358,7 +361,8 @@ class TestCdswRunner(unittest.TestCase):
             len(calls_of_google_drive_uploader) == 0,
             msg="Unexpected calls to Google Drive uploader: {}".format(calls_of_google_drive_uploader),
         )
-        CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_main_script, "SEND_LATEST_COMMAND_DATA")
+        # TODO cdsw-separation Zip latest command data and send latest command data validation should be performed with mocking, not CLI command
+        # CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_main_script, "SEND_LATEST_COMMAND_DATA")
 
     @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
@@ -386,6 +390,7 @@ class TestCdswRunner(unittest.TestCase):
         mock_job_config = self._create_mock_job_config([mock_run1, mock_run2])
 
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=False)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
@@ -396,7 +401,8 @@ class TestCdswRunner(unittest.TestCase):
             len(calls_of_google_drive_uploader) == 0,
             msg="Unexpected calls to Google Drive uploader: {}".format(calls_of_google_drive_uploader),
         )
-        CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_main_script, "SEND_LATEST_COMMAND_DATA")
+        # TODO cdsw-separation Zip latest command data and send latest command data validation should be performed with mocking, not CLI command
+        # CdswTestingCommons.assert_no_calls_with_arg(self, calls_of_main_script, "SEND_LATEST_COMMAND_DATA")
 
     @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
@@ -417,6 +423,7 @@ class TestCdswRunner(unittest.TestCase):
         )
         mock_job_config = self._create_mock_job_config([mock_run1, mock_run2])
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=True)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
@@ -460,7 +467,11 @@ class TestCdswRunner(unittest.TestCase):
 
     @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
     @patch(DRIVE_API_WRAPPER_UPLOAD_PATH)
-    def test_upload_command_data_to_drive(self, mock_drive_api_wrapper_upload, mock_subprocess_runner):
+    @patch(SEND_EMAIL_COMMAND_RUN_PATH)
+    def test_upload_command_data_to_drive(self,
+                                          mock_send_email_command_run,
+                                          mock_drive_api_wrapper_upload,
+                                          mock_subprocess_runner):
         mock_drive_api_wrapper_upload.return_value = self.create_mock_drive_api_file("testLink")
         mock_run1 = self._create_mock_cdsw_run(
             "run1", email_enabled=True, google_drive_upload_enabled=True, add_google_drive_settings=True
@@ -489,3 +500,29 @@ class TestCdswRunner(unittest.TestCase):
 
     # TODO Add TC: send_latest_command_data_in_email, various testcases
     # TODO Add TC: unknown command type
+    @staticmethod
+    def setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner):
+        def side_effect(cmd, **kwargs):
+            print("Side effect for Mock subprocess runner is started")
+
+            # Set up latest session dir
+            output_dir = ProjectUtils.get_output_child_dir("reviewsync", project_name_hint=TEST_MODULE_NAME)
+            session_dir = ProjectUtils.get_session_dir_under_child_dir(FileUtils.basename(output_dir))
+            project_out_root = ProjectUtils.get_output_basedir(
+                TEST_MODULE_NAME, project_name_hint=TEST_MODULE_NAME
+            )
+            FileUtils.create_symlink_path_dir(
+                "latest-session-reviewsync",
+                session_dir,
+                project_out_root,
+            )
+
+            # Set up log link
+            gibberish = ''.join(random.choices(string.ascii_uppercase + string.digits, k=200))
+            tmp_file_name = FileUtils.write_to_tempfile(gibberish)
+            log_level_name = logging.getLevelName(logging.INFO)
+            link_name = f"latest-log-reviewsync-{log_level_name}"
+            FileUtils.create_symlink_path_dir(link_name, tmp_file_name, project_out_root)
+
+        mock_subprocess_runner.side_effect = side_effect
+
