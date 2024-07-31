@@ -169,7 +169,7 @@ class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
             mock_service = Mock()
             mock_service.files.return_value = ["file1", "file2"]
             mock_build_service.return_value = mock_service
-            self.authorizer = self.create_authorizer()
+            self.authorizer = FakeGoogleDriveCdswHelper.create_authorizer()
             session_settings = DriveApiWrapperSessionSettings(
                 FileFindMode.JUST_UNTRASHED, DuplicateFileWriteResolutionMode.FAIL_FAST, enable_path_cache=True
             )
@@ -178,7 +178,8 @@ class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
                 "/tmp", module_name, CDSW_PROJECT, "command-data"
             )
 
-    def create_authorizer(self):
+    @staticmethod
+    def create_authorizer():
         mock_auth = Mock(spec=GoogleApiAuthorizer)
         authed_session = Object()
         authed_session.authed_creds = "creds"
@@ -613,5 +614,5 @@ class CdswTestingCommons:
 
 
 class FakeCdswRunner(CdswRunner):
-    def __init__(self, config: CdswRunnerConfig):
-        super().__init__(config)
+    def __init__(self, config: CdswRunnerConfig, google_drive_cdsw_helper=None):
+        super().__init__(config, google_drive_cdsw_helper=google_drive_cdsw_helper)

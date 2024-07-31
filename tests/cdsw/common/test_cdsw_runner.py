@@ -116,8 +116,7 @@ class TestCdswRunner(unittest.TestCase):
         mock_job_config_reader: CdswConfigReaderAdapter = Mock(spec=CdswConfigReaderAdapter)
         mock_job_config_reader.read_from_file.return_value = mock_job_config
         cdsw_runner_config = CdswRunnerConfig(self.parser, args, config_reader=mock_job_config_reader)
-        cdsw_runner = FakeCdswRunner(cdsw_runner_config)
-        cdsw_runner.drive_cdsw_helper = self.fake_google_drive_cdsw_helper
+        cdsw_runner = FakeCdswRunner(cdsw_runner_config, google_drive_cdsw_helper=self.fake_google_drive_cdsw_helper)
         return cdsw_runner
 
     @staticmethod

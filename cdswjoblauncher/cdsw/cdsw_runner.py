@@ -210,13 +210,13 @@ class CdswRunnerConfig:
 
 
 class CdswRunner:
-    def __init__(self, config: CdswRunnerConfig):
+    def __init__(self, config: CdswRunnerConfig, google_drive_cdsw_helper=None):
         self.executed_commands = []
         self.google_drive_uploads: List[
             Tuple[str, str, DriveApiFile]
         ] = []  # Tuple of: (command_type_real_name, drive_filename, drive_api_file)
         self.common_mail_config = CommonMailConfig()
-        self._setup_google_drive(config.module_name)
+        self._setup_google_drive(config.module_name, google_drive_cdsw_helper=google_drive_cdsw_helper)
         self.cdsw_runner_config = config
         self.dry_run = config.dry_run
 
@@ -303,7 +303,10 @@ class CdswRunner:
             prepend_text_to_email_body=drive_link_html_text
         )
 
-    def _setup_google_drive(self, module_name: str):
+    def _setup_google_drive(self, module_name: str, google_drive_cdsw_helper=None):
+        if google_drive_cdsw_helper:
+            self.drive_cdsw_helper = google_drive_cdsw_helper
+            return
         if OsUtils.is_env_var_true(CdswEnvVar.ENABLE_GOOGLE_DRIVE_INTEGRATION.value, default_val=True):
             self.drive_cdsw_helper = GoogleDriveCdswHelper(module_name)
         else:
