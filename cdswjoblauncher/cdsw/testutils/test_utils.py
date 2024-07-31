@@ -21,7 +21,6 @@ TEST_MODULE_NAME = "testmodule"
 
 from cdswjoblauncher.cdsw.cdsw_common import GoogleDriveCdswHelper, CDSW_PROJECT
 from cdswjoblauncher.cdsw.constants import SECRET_PROJECTS_DIR, PYTHON3
-from tests.cdsw.common.testutils.test_utilities import Object
 
 MANY_PARAMS = 9999
 
@@ -29,6 +28,15 @@ DRIVE_API_WRAPPER_PATH = "googleapiwrapper.google_drive.DriveApiWrapper"
 
 ESCAPED_ARGS = {"--aggregate-filters"}
 ESCAPED_ARGS_TUPLE = tuple(ESCAPED_ARGS)
+
+
+
+class Object(object):
+    def __contains__(self, key):
+        return key in self.__dict__
+
+
+
 
 
 class ArgumentType(Enum):
