@@ -9,10 +9,12 @@ from dacite import WrongTypeError
 from pythoncommons.constants import ExecutionMode
 from pythoncommons.file_utils import FileUtils
 from pythoncommons.logging_setup import SimpleLoggingSetup
+from pythoncommons.os_utils import OsUtils
 from pythoncommons.project_utils import ProjectUtils, ProjectRootDeterminationStrategy
 
 from cdswjoblauncher.cdsw.cdsw_common import CdswSetupResult, CdswSetup
 from cdswjoblauncher.cdsw.cdsw_config import CdswJobConfigReader
+from cdswjoblauncher.cdsw.constants import CdswEnvVar
 from cdswjoblauncher.cdsw.testutils.test_utils import CdswTestingCommons, TEST_MODULE_NAME, TEST_MODULE_MAIN_SCRIPT_NAME
 
 VALID_CONFIG_FILE = "cdsw_job_config.py"
@@ -36,6 +38,7 @@ class CdswConfigReaderTest(unittest.TestCase):
                               "GSHEET_JIRA_COLUMN", "GSHEET_UPDATE_DATE_COLUMN", "GSHEET_STATUS_INFO_COLUMN",
                               "BRANCHES"]
 
+        OsUtils.set_env_value("ENABLE_LOGGER_HANDLER_SANITY_CHECK", "False")
         cls.setup_result: CdswSetupResult = CdswSetup.initial_setup(TEST_MODULE_NAME,
                                                                     TEST_MODULE_MAIN_SCRIPT_NAME)
 
