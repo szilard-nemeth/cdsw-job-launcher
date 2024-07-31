@@ -22,7 +22,7 @@ from cdswjoblauncher.cdsw.cdsw_runner import CdswRunner, CdswRunnerConfig
 TEST_MODULE_NAME = "testmodule"
 
 from cdswjoblauncher.cdsw.cdsw_common import GoogleDriveCdswHelper, CDSW_PROJECT
-from cdswjoblauncher.cdsw.constants import SECRET_PROJECTS_DIR, PYTHON3
+from cdswjoblauncher.cdsw.constants import SECRET_PROJECTS_DIR, PYTHON3, PROJECT_MODULE_NAME
 
 MANY_PARAMS = 9999
 
@@ -154,6 +154,13 @@ REPO_ROOT_DIRNAME = "cdsw-job-launcher"
 LOG = logging.getLogger(__name__)
 
 
+def find_repo_root():
+    try:
+        return FileUtils.find_repo_root_dir(__file__, REPO_ROOT_DIRNAME)
+    except ValueError as e:
+        return FileUtils.find_repo_root_dir(__file__, PROJECT_MODULE_NAME)
+
+
 class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
     def __init__(self, module_name):
         # intentionally not calling super.__init__
@@ -183,7 +190,7 @@ class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
 
 
 class LocalDirs:
-    REPO_ROOT_DIR = FileUtils.find_repo_root_dir(__file__, REPO_ROOT_DIRNAME)
+    REPO_ROOT_DIR = find_repo_root()
     CDSW_ROOT_DIR = None
     CDSW_TESTS_DIR = None
     SCRIPTS_DIR = None
