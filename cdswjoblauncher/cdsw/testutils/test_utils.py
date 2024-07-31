@@ -175,7 +175,7 @@ class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
             )
             self.drive_wrapper = DriveApiWrapper(self.authorizer, session_settings=session_settings)
             self.drive_command_data_basedir = FileUtils.join_path(
-                "/tmp", TEST_MODULE_NAME, CDSW_PROJECT, "command-data"
+                "/tmp", module_name, CDSW_PROJECT, "command-data"
             )
 
     def create_authorizer(self):
@@ -524,9 +524,9 @@ class QuotedParamHandler:
 
 
 class CdswTestingCommons:
-    def __init__(self):
+    def __init__(self, module_name: str):
         self.github_ci_execution: bool = GitHubUtils.is_github_ci_execution()
-        self.cdsw_root_dir: str = self.determine_cdsw_root_dir()
+        self.cdsw_root_dir: str = self.determine_cdsw_root_dir(module_name)
         self.setup_local_dirs()
         self.cdsw_tests_root_dir: str = self.determine_cdsw_tests_root_dir()
 
@@ -546,7 +546,7 @@ class CdswTestingCommons:
     def get_path_from_test_basedir(self, *path_components):
         return FileUtils.join_path(self.cdsw_tests_root_dir, *path_components)
 
-    def determine_cdsw_root_dir(self):
+    def determine_cdsw_root_dir(self, module_name: str):
         if self.github_ci_execution:
             # When GitHub Actions CI runs the tests, it returns two or more paths,
             # so it's better to define the path by hand.
@@ -556,12 +556,12 @@ class CdswTestingCommons:
             # ]
             LOG.debug("Github Actions CI execution, crafting CDSW root dir path manually..")
             github_actions_workspace: str = GitHubUtils.get_workspace_path()
-            return FileUtils.join_path(github_actions_workspace, TEST_MODULE_NAME, CDSW_DIRNAME)
+            return FileUtils.join_path(github_actions_workspace, module_name, CDSW_DIRNAME)
 
         LOG.debug("Normal test execution, finding project dir..")
         return SimpleProjectUtils.get_project_dir(
             basedir=LocalDirs.REPO_ROOT_DIR,
-            parent_dir=TEST_MODULE_NAME,
+            parent_dir=module_name,
             dir_to_find=CDSW_DIRNAME,
             find_result_type=FindResultType.DIRS,
             exclude_dirs=["venv", "build"],

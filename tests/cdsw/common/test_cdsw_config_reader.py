@@ -30,7 +30,7 @@ class CdswConfigReaderTest(unittest.TestCase):
         ProjectUtils.set_root_determine_strategy(ProjectRootDeterminationStrategy.COMMON_FILE)
         ProjectUtils.get_test_output_basedir(TEST_MODULE_NAME)
         cls._setup_logging()
-        cls.cdsw_testing_commons = CdswTestingCommons()
+        cls.cdsw_testing_commons = CdswTestingCommons(TEST_MODULE_NAME)
         cls.configfiles_base_dir = cls.cdsw_testing_commons.get_path_from_test_basedir("common", "configfiles")
         cls.valid_env_vars = ["GSHEET_CLIENT_SECRET", "GSHEET_SPREADSHEET", "GSHEET_WORKSHEET",
                               "GSHEET_JIRA_COLUMN", "GSHEET_UPDATE_DATE_COLUMN", "GSHEET_STATUS_INFO_COLUMN",
