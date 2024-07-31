@@ -480,6 +480,7 @@ class TestCdswRunner(unittest.TestCase):
         mock_job_config = self._create_mock_job_config([mock_run1])
 
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=False)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
