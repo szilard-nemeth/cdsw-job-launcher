@@ -530,13 +530,13 @@ class CdswTestingCommons:
     def __init__(self, module_name: str):
         self.github_ci_execution: bool = GitHubUtils.is_github_ci_execution()
         self.cdsw_root_dir: str = self.determine_cdsw_root_dir(module_name)
-        self.setup_local_dirs()
+        self.setup_local_dirs(module_name)
         self.cdsw_tests_root_dir: str = self.determine_cdsw_tests_root_dir(module_name)
 
-    def setup_local_dirs(self):
+    def setup_local_dirs(self, module_name):
         LocalDirs.CDSW_ROOT_DIR = self.cdsw_root_dir
         LocalDirs.CDSW_TESTS_DIR = SimpleProjectUtils.get_project_dir(
-            basedir=self._repo_root_or_module_root(),
+            basedir=self._repo_root_or_module_root(module_name),
             parent_dir="tests",
             dir_to_find=CDSW_DIRNAME,
             find_result_type=FindResultType.DIRS,
