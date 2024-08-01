@@ -5,6 +5,7 @@ import os
 import unittest
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import List, Set, Dict
 from unittest.mock import _CallList, patch, Mock
 
@@ -575,13 +576,26 @@ class CdswTestingCommons:
             return FileUtils.join_path(github_actions_workspace, TESTS_DIR_NAME, CDSW_DIRNAME)
 
         LOG.debug("Normal test execution, finding project dir..")
-        return SimpleProjectUtils.get_project_dir(
-            basedir=self._repo_root_or_module_root(module_name),
-            parent_dir=TESTS_DIR_NAME,
-            dir_to_find=CDSW_DIRNAME,
-            find_result_type=FindResultType.DIRS,
-            exclude_dirs=["venv", "build"],
-        )
+
+        # Accept any of these paths:
+        # <module-root>/<module>/tests/cdsw
+        # <module-root>/tests/cdsw
+        try:
+            return SimpleProjectUtils.get_project_dir(
+                basedir=self._repo_root_or_module_root(module_name),
+                parent_dir=TESTS_DIR_NAME,
+                dir_to_find=CDSW_DIRNAME,
+                find_result_type=FindResultType.DIRS,
+                exclude_dirs=["venv", "build"],
+            )
+        except ValueError as e:
+            return SimpleProjectUtils.get_project_dir(
+                basedir=str(Path(self._repo_root_or_module_root(module_name)).parent.absolute()),
+                parent_dir=TESTS_DIR_NAME,
+                dir_to_find=CDSW_DIRNAME,
+                find_result_type=FindResultType.DIRS,
+                exclude_dirs=["venv", "build"],
+            )
 
     @staticmethod
     def _repo_root_or_module_root(module_name):
