@@ -594,7 +594,7 @@ class CdswTestingCommons:
         else:
             # External execution
             module = importlib.import_module(module_name)
-            return os.path.abspath(module.__file__)
+            return os.path.dirname(module.__file__)
 
     def get_path_from_test_basedir(self, *path_components):
         return FileUtils.join_path(self.cdsw_tests_root_dir, *path_components)
