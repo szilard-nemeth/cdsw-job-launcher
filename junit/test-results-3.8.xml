@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="3" skipped="3" tests="42" time="1.720" timestamp="2024-07-31T15:46:58.387795" hostname="22355.local"><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_check_if_mandatory_env_vars_are_provided_at_runtime_positive_case" time="0.119" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_check_if_mandatory_env_vars_missing" time="0.002" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_drive_api_upload_settings" time="0.005" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_drive_api_upload_settings_with_vars" time="0.005" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_email_body_file" time="0.021" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_email_settings" time="0.007" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_env_var_sanitize" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_if_optional_arg_is_mapped_to_main_script_args_it_becomes_mandatory" time="0.005" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_invalid_command_type" time="0.001"><skipped type="pytest.skip" message="runs.email-settings parsing is buggy">/Users/snemeth/development/my-repos/cdsw-job-launcher/tests/cdsw/common/test_cdsw_config_reader.py:105: runs.email-settings parsing is buggy</skipped></testcase><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_invalid_mandatory_env_var" time="0.001" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_job_name" time="0.005" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_main_script_arguments_with_conditional_env_var" time="0.007" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_main_script_arguments_with_includes" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_mandatory_env_vars_are_of_correct_command_type" time="0.005" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_runconfig_defined_main_script_arguments_env_vars" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_runconfig_defined_main_script_arguments_overrides" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_runconfig_defined_main_script_arguments_regular_vars" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_runconfig_defined_main_script_variable_overrides" time="0.007" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_transitive_variable_resolution_endless" time="0.002" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_transitive_variable_resolution_unresolved" time="0.002" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_transitive_variable_resolution_valid" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_transitive_variable_resolution_valid_more_complex" time="0.008" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_transitive_variable_resolution_valid_more_complex2" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_two_run_configs_defined_complex" time="0.010" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_two_run_configs_with_same_name_not_allowed" time="0.002" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_using_builtin_variable" time="0.002" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_using_builtin_variable_in_other_variable" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_valid_command_type" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_valid_mandatory_env_vars" time="0.005" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_valid_optional_env_vars" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_valid_optional_env_vars_should_be_also_part_of_env_var_class" time="0.001" /><testcase classname="tests.cdsw.common.test_cdsw_config_reader.CdswConfigReaderTest" name="test_config_reader_variables" time="0.006" /><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_argument_parsing_into_config" time="0.003" /><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_argument_parsing_into_config_auto_discovery" time="0.001"><skipped type="pytest.skip" message="Add this back">/Users/snemeth/development/my-repos/cdsw-job-launcher/tests/cdsw/common/test_cdsw_runner.py:165: Add this back</skipped></testcase><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_argument_parsing_into_config_invalid_command_type" time="0.000"><skipped type="pytest.skip" message="Add this back when CdswRunnerConfig validates command type">/Users/snemeth/development/my-repos/cdsw-job-launcher/tests/cdsw/common/test_cdsw_runner.py:185: Add this back when CdswRunnerConfig validates command type</skipped></testcase><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_dry_run_does_not_invoke_anything" time="0.027" /><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_execute_google_drive_is_disabled_by_env_var" time="0.022" /><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_execute_runs_single_run_with_fake_args" time="0.022" /><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_execute_two_runs_with_fake_args" time="0.025"><failure message="ValueError: Cannot find stored test child dir for project. Project: cdsw-job-launcher, Child dir: reviewsync, All stored test child dirs: {'cdsw-job-launcher': {'logs': '/Users/snemeth/snemeth-dev-projects/testmodule/test/logs'}}">self = &lt;tests.cdsw.common.test_cdsw_runner.TestCdswRunner testMethod=test_execute_two_runs_with_fake_args&gt;
+mock_send_email_command_run = &lt;MagicMock name='run' id='4607023856'&gt;, mock_google_drive_cdsw_helper_upload = &lt;MagicMock name='upload' id='4607521888'&gt;
+mock_subprocess_runner = &lt;MagicMock name='run_and_follow_stdout_stderr' id='4607529840'&gt;
+
+    @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
+    @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
+    @patch(SEND_EMAIL_COMMAND_RUN_PATH)
+    def test_execute_two_runs_with_fake_args(
+        self,
+        mock_send_email_command_run,
+        mock_google_drive_cdsw_helper_upload,
+        mock_subprocess_runner,
+    ):
+        mock_google_drive_cdsw_helper_upload.return_value = self.create_mock_drive_api_file(
+            "http://googledrive/link-of-file-in-google-drive"
+        )
+        mock_run1 = self._create_mock_cdsw_run("run1", email_enabled=True, google_drive_upload_enabled=True)
+        mock_run2 = self._create_mock_cdsw_run("run2", email_enabled=False, google_drive_upload_enabled=False)
+        mock_job_config = self._create_mock_job_config([mock_run1, mock_run2])
+    
+        args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=False)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
+        cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
+&gt;       cdsw_runner.start()
+
+tests/cdsw/common/test_cdsw_runner.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+cdswjoblauncher/cdsw/cdsw_runner.py:256: in start
+    self.execute_main_script(" ".join(run.main_script_arguments))
+cdswjoblauncher/cdsw/cdsw_runner.py:322: in execute_main_script
+    self._execute_command(cmd)
+cdswjoblauncher/cdsw/cdsw_runner.py:329: in _execute_command
+    SubprocessCommandRunner.run_and_follow_stdout_stderr(
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1092: in __call__
+    return self._mock_call(*args, **kwargs)
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1096: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1157: in _execute_mock_call
+    result = effect(*args, **kwargs)
+tests/cdsw/common/test_cdsw_runner.py:511: in side_effect
+    session_dir = ProjectUtils.get_session_dir_under_child_dir(FileUtils.basename(output_dir))
+../../../Library/Caches/pypoetry/virtualenvs/cdsw-job-launcher-udrFc4Xg-py3.9/lib/python3.9/site-packages/pythoncommons/project_utils.py:465: in get_session_dir_under_child_dir
+    return cls._get_session_dir_under_child_dir(child_dir_name, test=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = &lt;class 'pythoncommons.project_utils.ProjectUtils'&gt;, child_dir_name = 'reviewsync', test = True
+
+    @classmethod
+    def _get_session_dir_under_child_dir(cls, child_dir_name, test: bool = False):
+        child_dir_type: str = "child dir" if not test else "test child dir"
+        dir_dict = cls.CHILD_DIR_DICT if not test else cls.CHILD_DIR_TEST_DICT
+    
+        if not child_dir_name:
+            raise ValueError(f"Project {child_dir_type} name should be specified!")
+    
+        project_name = cls._validate_project_for_child_dir_creation()
+        if project_name in dir_dict and child_dir_name in dir_dict[project_name]:
+            stored_dir = dir_dict[project_name][child_dir_name]
+            LOG.debug(f"Found already stored {child_dir_type} for project '{project_name}': {stored_dir}")
+    
+            session_dir = FileUtils.join_path(stored_dir, f"session-{DateUtils.now_formatted('%Y%m%d_%H%M%S')}")
+            FileUtils.ensure_dir_created(session_dir)
+            return session_dir
+        else:
+&gt;           raise ValueError(
+                f"Cannot find stored {child_dir_type} for project. "
+                f"Project: {project_name}, "
+                f"Child dir: {child_dir_name}, "
+                f"All stored {child_dir_type}s: {dir_dict}"
+            )
+E           ValueError: Cannot find stored test child dir for project. Project: cdsw-job-launcher, Child dir: reviewsync, All stored test child dirs: {'cdsw-job-launcher': {'logs': '/Users/snemeth/snemeth-dev-projects/testmodule/test/logs'}}
+
+../../../Library/Caches/pypoetry/virtualenvs/cdsw-job-launcher-udrFc4Xg-py3.9/lib/python3.9/site-packages/pythoncommons/project_utils.py:489: ValueError</failure></testcase><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_google_drive_settings_and_email_settings_are_defined_but_disabled" time="0.027"><failure message="ValueError: Cannot find stored test child dir for project. Project: cdsw-job-launcher, Child dir: reviewsync, All stored test child dirs: {'cdsw-job-launcher': {'logs': '/Users/snemeth/snemeth-dev-projects/testmodule/test/logs'}}">self = &lt;tests.cdsw.common.test_cdsw_runner.TestCdswRunner testMethod=test_google_drive_settings_and_email_settings_are_defined_but_disabled&gt;
+mock_google_drive_cdsw_helper_upload = &lt;MagicMock name='upload' id='4607553056'&gt;, mock_subprocess_runner = &lt;MagicMock name='run_and_follow_stdout_stderr' id='4609689872'&gt;
+
+    @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
+    @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
+    def test_google_drive_settings_and_email_settings_are_defined_but_disabled(
+        self, mock_google_drive_cdsw_helper_upload, mock_subprocess_runner
+    ):
+        mock_google_drive_cdsw_helper_upload.return_value = self.create_mock_drive_api_file(
+            "http://googledrive/link-of-file-in-google-drive"
+        )
+    
+        mock_run1 = self._create_mock_cdsw_run(
+            "run1",
+            email_enabled=False,
+            google_drive_upload_enabled=False,
+            add_email_settings=True,
+            add_google_drive_settings=True,
+        )
+        mock_run2 = self._create_mock_cdsw_run(
+            "run2",
+            email_enabled=False,
+            google_drive_upload_enabled=False,
+            add_email_settings=True,
+            add_google_drive_settings=True,
+        )
+        mock_job_config = self._create_mock_job_config([mock_run1, mock_run2])
+    
+        args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=False)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
+        cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
+&gt;       cdsw_runner.start()
+
+tests/cdsw/common/test_cdsw_runner.py:396: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+cdswjoblauncher/cdsw/cdsw_runner.py:256: in start
+    self.execute_main_script(" ".join(run.main_script_arguments))
+cdswjoblauncher/cdsw/cdsw_runner.py:322: in execute_main_script
+    self._execute_command(cmd)
+cdswjoblauncher/cdsw/cdsw_runner.py:329: in _execute_command
+    SubprocessCommandRunner.run_and_follow_stdout_stderr(
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1092: in __call__
+    return self._mock_call(*args, **kwargs)
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1096: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1157: in _execute_mock_call
+    result = effect(*args, **kwargs)
+tests/cdsw/common/test_cdsw_runner.py:511: in side_effect
+    session_dir = ProjectUtils.get_session_dir_under_child_dir(FileUtils.basename(output_dir))
+../../../Library/Caches/pypoetry/virtualenvs/cdsw-job-launcher-udrFc4Xg-py3.9/lib/python3.9/site-packages/pythoncommons/project_utils.py:465: in get_session_dir_under_child_dir
+    return cls._get_session_dir_under_child_dir(child_dir_name, test=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = &lt;class 'pythoncommons.project_utils.ProjectUtils'&gt;, child_dir_name = 'reviewsync', test = True
+
+    @classmethod
+    def _get_session_dir_under_child_dir(cls, child_dir_name, test: bool = False):
+        child_dir_type: str = "child dir" if not test else "test child dir"
+        dir_dict = cls.CHILD_DIR_DICT if not test else cls.CHILD_DIR_TEST_DICT
+    
+        if not child_dir_name:
+            raise ValueError(f"Project {child_dir_type} name should be specified!")
+    
+        project_name = cls._validate_project_for_child_dir_creation()
+        if project_name in dir_dict and child_dir_name in dir_dict[project_name]:
+            stored_dir = dir_dict[project_name][child_dir_name]
+            LOG.debug(f"Found already stored {child_dir_type} for project '{project_name}': {stored_dir}")
+    
+            session_dir = FileUtils.join_path(stored_dir, f"session-{DateUtils.now_formatted('%Y%m%d_%H%M%S')}")
+            FileUtils.ensure_dir_created(session_dir)
+            return session_dir
+        else:
+&gt;           raise ValueError(
+                f"Cannot find stored {child_dir_type} for project. "
+                f"Project: {project_name}, "
+                f"Child dir: {child_dir_name}, "
+                f"All stored {child_dir_type}s: {dir_dict}"
+            )
+E           ValueError: Cannot find stored test child dir for project. Project: cdsw-job-launcher, Child dir: reviewsync, All stored test child dirs: {'cdsw-job-launcher': {'logs': '/Users/snemeth/snemeth-dev-projects/testmodule/test/logs'}}
+
+../../../Library/Caches/pypoetry/virtualenvs/cdsw-job-launcher-udrFc4Xg-py3.9/lib/python3.9/site-packages/pythoncommons/project_utils.py:489: ValueError</failure></testcase><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_google_drive_settings_are_not_defined" time="0.028"><failure message="ValueError: Cannot find stored test child dir for project. Project: cdsw-job-launcher, Child dir: reviewsync, All stored test child dirs: {'cdsw-job-launcher': {'logs': '/Users/snemeth/snemeth-dev-projects/testmodule/test/logs'}}">self = &lt;tests.cdsw.common.test_cdsw_runner.TestCdswRunner testMethod=test_google_drive_settings_are_not_defined&gt;
+mock_google_drive_cdsw_helper_upload = &lt;MagicMock name='upload' id='4607900544'&gt;, mock_subprocess_runner = &lt;MagicMock name='run_and_follow_stdout_stderr' id='4608735648'&gt;
+
+    @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
+    @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
+    def test_google_drive_settings_are_not_defined(
+        self,
+        mock_google_drive_cdsw_helper_upload,
+        mock_subprocess_runner,
+    ):
+        mock_run1 = self._create_mock_cdsw_run(
+            "run1",
+            email_enabled=True,
+            google_drive_upload_enabled=True,
+            add_email_settings=False,
+            add_google_drive_settings=False,
+        )
+        mock_run2 = self._create_mock_cdsw_run(
+            "run2",
+            email_enabled=True,
+            google_drive_upload_enabled=True,
+            add_email_settings=False,
+            add_google_drive_settings=False,
+        )
+        mock_job_config = self._create_mock_job_config([mock_run1, mock_run2])
+    
+        args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=False)
+        self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
+        cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
+&gt;       cdsw_runner.start()
+
+tests/cdsw/common/test_cdsw_runner.py:356: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+cdswjoblauncher/cdsw/cdsw_runner.py:256: in start
+    self.execute_main_script(" ".join(run.main_script_arguments))
+cdswjoblauncher/cdsw/cdsw_runner.py:322: in execute_main_script
+    self._execute_command(cmd)
+cdswjoblauncher/cdsw/cdsw_runner.py:329: in _execute_command
+    SubprocessCommandRunner.run_and_follow_stdout_stderr(
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1092: in __call__
+    return self._mock_call(*args, **kwargs)
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1096: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+../../../.asdf/installs/python/3.9.13/lib/python3.9/unittest/mock.py:1157: in _execute_mock_call
+    result = effect(*args, **kwargs)
+tests/cdsw/common/test_cdsw_runner.py:511: in side_effect
+    session_dir = ProjectUtils.get_session_dir_under_child_dir(FileUtils.basename(output_dir))
+../../../Library/Caches/pypoetry/virtualenvs/cdsw-job-launcher-udrFc4Xg-py3.9/lib/python3.9/site-packages/pythoncommons/project_utils.py:465: in get_session_dir_under_child_dir
+    return cls._get_session_dir_under_child_dir(child_dir_name, test=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = &lt;class 'pythoncommons.project_utils.ProjectUtils'&gt;, child_dir_name = 'reviewsync', test = True
+
+    @classmethod
+    def _get_session_dir_under_child_dir(cls, child_dir_name, test: bool = False):
+        child_dir_type: str = "child dir" if not test else "test child dir"
+        dir_dict = cls.CHILD_DIR_DICT if not test else cls.CHILD_DIR_TEST_DICT
+    
+        if not child_dir_name:
+            raise ValueError(f"Project {child_dir_type} name should be specified!")
+    
+        project_name = cls._validate_project_for_child_dir_creation()
+        if project_name in dir_dict and child_dir_name in dir_dict[project_name]:
+            stored_dir = dir_dict[project_name][child_dir_name]
+            LOG.debug(f"Found already stored {child_dir_type} for project '{project_name}': {stored_dir}")
+    
+            session_dir = FileUtils.join_path(stored_dir, f"session-{DateUtils.now_formatted('%Y%m%d_%H%M%S')}")
+            FileUtils.ensure_dir_created(session_dir)
+            return session_dir
+        else:
+&gt;           raise ValueError(
+                f"Cannot find stored {child_dir_type} for project. "
+                f"Project: {project_name}, "
+                f"Child dir: {child_dir_name}, "
+                f"All stored {child_dir_type}s: {dir_dict}"
+            )
+E           ValueError: Cannot find stored test child dir for project. Project: cdsw-job-launcher, Child dir: reviewsync, All stored test child dirs: {'cdsw-job-launcher': {'logs': '/Users/snemeth/snemeth-dev-projects/testmodule/test/logs'}}
+
+../../../Library/Caches/pypoetry/virtualenvs/cdsw-job-launcher-udrFc4Xg-py3.9/lib/python3.9/site-packages/pythoncommons/project_utils.py:489: ValueError</failure></testcase><testcase classname="tests.cdsw.common.test_cdsw_runner.TestCdswRunner" name="test_upload_command_data_to_drive" time="0.037" /></testsuite></testsuites>
