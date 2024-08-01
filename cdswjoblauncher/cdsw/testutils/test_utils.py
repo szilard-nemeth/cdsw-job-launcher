@@ -1,4 +1,6 @@
+import inspect
 import logging
+import os
 import unittest
 from dataclasses import dataclass, field
 from enum import Enum
@@ -15,7 +17,7 @@ from googleapiwrapper.google_drive import (
 from pythoncommons.file_utils import FileUtils, FindResultType
 from pythoncommons.github_utils import GitHubUtils
 from pythoncommons.object_utils import ObjUtils
-from pythoncommons.project_utils import SimpleProjectUtils
+from pythoncommons.project_utils import SimpleProjectUtils, ProjectUtils
 
 from cdswjoblauncher.cdsw.cdsw_runner import CdswRunner, CdswRunnerConfig
 
@@ -529,12 +531,12 @@ class CdswTestingCommons:
         self.github_ci_execution: bool = GitHubUtils.is_github_ci_execution()
         self.cdsw_root_dir: str = self.determine_cdsw_root_dir(module_name)
         self.setup_local_dirs()
-        self.cdsw_tests_root_dir: str = self.determine_cdsw_tests_root_dir()
+        self.cdsw_tests_root_dir: str = self.determine_cdsw_tests_root_dir(module_name)
 
     def setup_local_dirs(self):
         LocalDirs.CDSW_ROOT_DIR = self.cdsw_root_dir
         LocalDirs.CDSW_TESTS_DIR = SimpleProjectUtils.get_project_dir(
-            basedir=LocalDirs.REPO_ROOT_DIR,
+            basedir=self._repo_root_or_module_root(),
             parent_dir="tests",
             dir_to_find=CDSW_DIRNAME,
             find_result_type=FindResultType.DIRS,
@@ -543,9 +545,6 @@ class CdswTestingCommons:
         LocalDirs.SCRIPTS_DIR = FileUtils.join_path(LocalDirs.CDSW_ROOT_DIR, "scripts")
         LocalDirs.TEST_MODULE_RESULT_DIR = FileUtils.join_path(LocalDirs.CDSW_ROOT_DIR, "testmodule-results")
         LOG.info("Local dirs: %s", ObjUtils.get_static_fields_with_values(LocalDirs))
-
-    def get_path_from_test_basedir(self, *path_components):
-        return FileUtils.join_path(self.cdsw_tests_root_dir, *path_components)
 
     def determine_cdsw_root_dir(self, module_name: str):
         if self.github_ci_execution:
@@ -561,14 +560,14 @@ class CdswTestingCommons:
 
         LOG.debug("Normal test execution, finding project dir..")
         return SimpleProjectUtils.get_project_dir(
-            basedir=LocalDirs.REPO_ROOT_DIR,
+            basedir=self._repo_root_or_module_root(module_name),
             parent_dir=module_name,
             dir_to_find=CDSW_DIRNAME,
             find_result_type=FindResultType.DIRS,
             exclude_dirs=["venv", "build"],
         )
 
-    def determine_cdsw_tests_root_dir(self):
+    def determine_cdsw_tests_root_dir(self, module_name):
         if self.github_ci_execution:
             LOG.debug("Github Actions CI execution, crafting CDSW testing root dir path manually..")
             github_actions_workspace: str = GitHubUtils.get_workspace_path()
@@ -576,12 +575,29 @@ class CdswTestingCommons:
 
         LOG.debug("Normal test execution, finding project dir..")
         return SimpleProjectUtils.get_project_dir(
-            basedir=LocalDirs.REPO_ROOT_DIR,
+            basedir=self._repo_root_or_module_root(module_name),
             parent_dir=TESTS_DIR_NAME,
             dir_to_find=CDSW_DIRNAME,
             find_result_type=FindResultType.DIRS,
             exclude_dirs=["venv", "build"],
         )
+
+    @staticmethod
+    def _repo_root_or_module_root(module_name):
+        stack = inspect.stack()
+        stack_frame, idx = ProjectUtils._find_first_non_pythoncommons_stackframe(stack)
+        fname = stack_frame.filename
+        if "cdsw-job-launcher/cdswjoblauncher" in fname:
+            # CDSW job launcher execution
+            return LocalDirs.REPO_ROOT_DIR
+        else:
+            # External execution
+            module = module_name.import_module(module_name)
+            return os.path.abspath(module.__file__)
+
+    def get_path_from_test_basedir(self, *path_components):
+        return FileUtils.join_path(self.cdsw_tests_root_dir, *path_components)
+
 
     @staticmethod
     def verify_commands(tc, expectations: List[CommandExpectations], actual_commands: List[str]):
