@@ -1,3 +1,4 @@
+import importlib
 import inspect
 import logging
 import os
@@ -592,7 +593,7 @@ class CdswTestingCommons:
             return LocalDirs.REPO_ROOT_DIR
         else:
             # External execution
-            module = module_name.import_module(module_name)
+            module = importlib.import_module(module_name)
             return os.path.abspath(module.__file__)
 
     def get_path_from_test_basedir(self, *path_components):
