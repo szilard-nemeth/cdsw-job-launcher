@@ -197,7 +197,6 @@ class FakeGoogleDriveCdswHelper(GoogleDriveCdswHelper):
 class LocalDirs:
     REPO_ROOT_DIR = find_repo_root()
     CDSW_ROOT_DIR = None
-    CDSW_TESTS_DIR = None
     SCRIPTS_DIR = None
     TEST_MODULE_RESULT_DIR = None
     CDSW_SECRET_DIR = FileUtils.join_path(SECRET_PROJECTS_DIR, CDSW_DIRNAME)
@@ -536,13 +535,14 @@ class CdswTestingCommons:
 
     def setup_local_dirs(self, module_name):
         LocalDirs.CDSW_ROOT_DIR = self.cdsw_root_dir
-        LocalDirs.CDSW_TESTS_DIR = SimpleProjectUtils.get_project_dir(
-            basedir=self._repo_root_or_module_root(module_name),
-            parent_dir="tests",
-            dir_to_find=CDSW_DIRNAME,
-            find_result_type=FindResultType.DIRS,
-            exclude_dirs=["venv", "build"],
-        )
+        # TODO cdsw-separation Unused: Remove when everything finalized
+        # LocalDirs.CDSW_TESTS_DIR = SimpleProjectUtils.get_project_dir(
+        #     basedir=self._repo_root_or_module_root(module_name),
+        #     parent_dir="tests",
+        #     dir_to_find=CDSW_DIRNAME,
+        #     find_result_type=FindResultType.DIRS,
+        #     exclude_dirs=["venv", "build"],
+        # )
         LocalDirs.SCRIPTS_DIR = FileUtils.join_path(LocalDirs.CDSW_ROOT_DIR, "scripts")
         LocalDirs.TEST_MODULE_RESULT_DIR = FileUtils.join_path(LocalDirs.CDSW_ROOT_DIR, "testmodule-results")
         LOG.info("Local dirs: %s", ObjUtils.get_static_fields_with_values(LocalDirs))
