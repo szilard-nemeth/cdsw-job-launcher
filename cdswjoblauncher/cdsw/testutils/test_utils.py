@@ -123,6 +123,8 @@ COMMAND_ARGUMENTS = {
         "--download-uncached-job-data": NO_ARG,
         "--request-limit": SINGLE_NORMAL_ARG,
         "--cache-type": SINGLE_NORMAL_ARG,
+        "--jenkins-user": SINGLE_NORMAL_ARG,
+        "--jenkins-password": SINGLE_NORMAL_ARG,
     },
     "branch_comparator": {
         "--commit_author_exceptions": MANY_NORMAL_ARGS,
