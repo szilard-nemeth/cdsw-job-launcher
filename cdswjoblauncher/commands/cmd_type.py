@@ -5,6 +5,7 @@ from enum import Enum
 LATEST_DATA_ZIP_LINK_NAME = "latest-command-data-zip"
 
 
+# TODO cdsw-separation Seems like this class can be removed
 class CommandType(Enum):
     ZIP_LATEST_COMMAND_DATA = ("zip_latest_command_data", "zip-latest-command-data", False)
     SEND_LATEST_COMMAND_DATA = ("send_latest_command_data", "send-latest-command-data", False)

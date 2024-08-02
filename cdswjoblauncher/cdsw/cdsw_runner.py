@@ -135,7 +135,7 @@ class CdswRunnerConfig:
         self.config_reader = config_reader
         self.default_email_recipients = args.default_email_recipients
         self.envs: Dict[str, str] = self._parse_envs(args)
-        self.job_preparation_callbacks: List[Callable] = self._parse_job_preparation_callbacks(args)
+        self.job_preparation_callback_names: List[str] = self._parse_job_preparation_callbacks(args)
         self.module_name = args.module_name
         self.main_script_name = args.main_script_name
 
@@ -236,8 +236,10 @@ class CdswRunner:
     def start(self):
         LOG.info("Starting CDSW runner...")
         self.setup_result: CdswSetupResult = CdswSetup.initial_setup(self.cdsw_runner_config.module_name,
-                                                                self.cdsw_runner_config.main_script_name,
-                                                                self.cdsw_runner_config.envs)
+                                                                     self.cdsw_runner_config.main_script_name,
+                                                                     self.cdsw_runner_config.job_preparation_callback_names,
+                                                                     self.cdsw_runner_config.envs,
+                                                                     )
         LOG.info("Setup result: %s", self.setup_result)
         self.job_config: CdswJobConfig = self.cdsw_runner_config.config_reader.read_from_file(
             self.cdsw_runner_config.job_config_file,
@@ -248,7 +250,7 @@ class CdswRunner:
         self.output_basedir = self.setup_result.output_basedir
         LOG.info("Setup result: %s", self.setup_result)
 
-        for callback in self.cdsw_runner_config.job_preparation_callbacks:
+        for callback in self.setup_result.job_preparation_callbacks:
             LOG.info("Calling job preparation callback: %s", callback)
             callback(self, self.job_config, self.setup_result)
 

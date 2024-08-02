@@ -1,10 +1,12 @@
 import dataclasses
+import importlib
 import logging
 import os
+import pkgutil
 import site
 import sys
 from enum import Enum
-from typing import Dict
+from typing import Dict, List, Callable
 
 # https://stackoverflow.com/a/50255019/1106893
 from googleapiwrapper.common import ServiceType
@@ -30,6 +32,7 @@ from pythoncommons.project_utils import (
 )
 
 from cdswjoblauncher.cdsw.constants import CdswEnvVar, SECRET_PROJECTS_DIR, PROJECT_NAME
+from cdswjoblauncher.cdsw.utils import MethodResolver
 
 
 class ReportFile(Enum):
@@ -84,11 +87,15 @@ class CdswSetupResult:
     output_basedir: str
     env_vars: Dict[str, str]
     module_root: str
+    job_preparation_callbacks: List[Callable] = dataclasses.field(default_factory=list)
 
 
 class CdswSetup:
     @staticmethod
-    def initial_setup(module_name: str, main_script_name: str, env_vars: Dict[str, str] = None):
+    def initial_setup(module_name: str,
+                      main_script_name: str,
+                      job_prep_callback_names: List[str],
+                      env_vars: Dict[str, str] = None):
         enable_handler_sanity_check = OsUtils.is_env_var_true(
             CdswEnvVar.ENABLE_LOGGER_HANDLER_SANITY_CHECK.value, default_val=True
         )
@@ -113,7 +120,12 @@ class CdswSetup:
         LOG.info("Using basedir for scripts: %s", basedir)
         LOG.debug("Common dirs after setup: %s", ObjUtils.get_class_members(CommonDirs))
         LOG.debug("Common files after setup: %s", ObjUtils.get_class_members(CommonFiles))
-        return CdswSetupResult(basedir, output_basedir, env_vars, CommonDirs.MODULE_ROOT)
+
+        LOG.debug("Resolving job preparation callback functions")
+        resolver = MethodResolver(module_name, job_prep_callback_names)
+        callables = resolver.resolve()
+        return CdswSetupResult(basedir, output_basedir, env_vars, CommonDirs.MODULE_ROOT, callables)
+
 
     @staticmethod
     def _determine_basedir():

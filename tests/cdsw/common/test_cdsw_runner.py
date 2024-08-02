@@ -23,6 +23,7 @@ from cdswjoblauncher.cdsw.constants import CdswEnvVar, PYTHON3, YarnDevToolsEnvV
 
 from cdswjoblauncher.cdsw.testutils.test_utils import FakeCdswRunner, FakeGoogleDriveCdswHelper, CommandExpectations, \
     CdswTestingCommons, Object, TEST_MODULE_NAME, TEST_MODULE_MAIN_SCRIPT_NAME
+from testmodule.cdsw.mod1.mod2.cdsw_test_mod import JobPreparation
 
 FAKE_CONFIG_FILE = "fake-config-file.py"
 REVIEWSYNC_CONFIG_FILE_NAME = "reviewsync_job_config.py"
@@ -59,6 +60,8 @@ class TestCdswRunner(unittest.TestCase):
         if CdswEnvVar.ENABLE_GOOGLE_DRIVE_INTEGRATION.value in os.environ:
             del os.environ[CdswEnvVar.ENABLE_GOOGLE_DRIVE_INTEGRATION.value]
 
+        JobPreparation.called = False
+
     def tearDown(self) -> None:
         if self.tmp_dir_name:
             self.tmp_dir_name.cleanup()
@@ -84,7 +87,7 @@ class TestCdswRunner(unittest.TestCase):
         return args, reviewsync_config_file_path
 
     @staticmethod
-    def _create_args_for_specified_file(config_file: str, dry_run: bool, override_cmd_type: str = None):
+    def _create_args_for_specified_file(config_file: str, dry_run: bool, override_cmd_type: str = None, add_job_preparation_callback = True):
         args = Object()
         args.module_name = TEST_MODULE_NAME
         args.main_script_name = TEST_MODULE_MAIN_SCRIPT_NAME
@@ -94,8 +97,9 @@ class TestCdswRunner(unittest.TestCase):
         args.command_type_session_based = True
         args.command_type_zip_name = f"latest-command-data-zip-{DEFAULT_COMMAND_TYPE}"
         args.command_type_valid_env_vars = ["GSHEET_CLIENT_SECRET", "GSHEET_SPREADSHEET", "GSHEET_WORKSHEET",
-                              "GSHEET_JIRA_COLUMN", "GSHEET_UPDATE_DATE_COLUMN", "GSHEET_STATUS_INFO_COLUMN",
-                              "BRANCHES"]
+                                            "GSHEET_JIRA_COLUMN", "GSHEET_UPDATE_DATE_COLUMN",
+                                            "GSHEET_STATUS_INFO_COLUMN",
+                                            "BRANCHES"]
         HADOOP_UPSTREAM_BASEDIR = FileUtils.join_path(CommonDirs.CDSW_BASEDIR, "repos", "apache", "hadoop")
         HADOOP_CLOUDERA_BASEDIR = FileUtils.join_path(CommonDirs.CDSW_BASEDIR, "repos", "cloudera", "hadoop")
         args.env = [f"{YarnDevToolsEnvVar.ENV_CLOUDERA_HADOOP_ROOT.value}={HADOOP_UPSTREAM_BASEDIR}",
@@ -109,6 +113,9 @@ class TestCdswRunner(unittest.TestCase):
         else:
             args.command_type_real_name = DEFAULT_COMMAND_TYPE
             args.command_type_name = DEFAULT_COMMAND_TYPE
+
+        if add_job_preparation_callback:
+            args.job_preparation_callback = ["JobPreparation.execute"]
         args.dry_run = dry_run
         return args
 
@@ -198,6 +205,8 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
+        self.assertTrue(JobPreparation.called)
+
         exp_command_1 = (
             CommandExpectations(self)
             .add_expected_ordered_arg("python3")
@@ -246,6 +255,7 @@ class TestCdswRunner(unittest.TestCase):
         expectations = [exp_command_1, ]
         CdswTestingCommons.verify_commands(self, expectations, cdsw_runner.executed_commands)
 
+
     @patch(SUBPROCESSRUNNER_RUN_METHOD_PATH)
     @patch(CDSW_RUNNER_DRIVE_CDSW_HELPER_UPLOAD_PATH)
     @patch(SEND_EMAIL_COMMAND_RUN_PATH)
@@ -267,6 +277,7 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
+        self.assertTrue(JobPreparation.called)
         calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
 
@@ -355,6 +366,8 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
+        self.assertTrue(JobPreparation.called)
+
         calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
 
@@ -395,6 +408,8 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
+        self.assertTrue(JobPreparation.called)
+
         calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
 
@@ -428,6 +443,8 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
+        self.assertTrue(JobPreparation.called)
+
         calls_of_main_script = mock_subprocess_runner.call_args_list
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
 
@@ -459,6 +476,8 @@ class TestCdswRunner(unittest.TestCase):
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
 
+        self.assertTrue(JobPreparation.called)
+
         calls_of_google_drive_uploader = mock_google_drive_cdsw_helper_upload.call_args_list
         self.assertTrue(
             len(calls_of_google_drive_uploader) == 0,
@@ -483,6 +502,8 @@ class TestCdswRunner(unittest.TestCase):
         self.setup_side_effect_on_mock_subprocess_runner(mock_subprocess_runner)
         cdsw_runner = self._create_cdsw_runner_with_mock_config(args, mock_job_config)
         cdsw_runner.start()
+
+        self.assertTrue(JobPreparation.called)
 
         calls_of_google_drive_uploader = mock_drive_api_wrapper_upload.call_args_list
         self.assertTrue(
