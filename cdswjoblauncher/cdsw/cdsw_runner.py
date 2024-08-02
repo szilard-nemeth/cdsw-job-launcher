@@ -39,7 +39,7 @@ class ArgParser:
             "--verbose",
             action="store_true",
             dest="verbose",
-            default=None,
+            default=False,
             required=False,
             help="More verbose log (including gitpython verbose logs)",
         )
