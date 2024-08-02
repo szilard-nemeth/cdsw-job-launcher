@@ -284,6 +284,8 @@ class CommandExpectations:
         return self
 
     def with_command_type(self, cmd_type: str):
+        if not isinstance(cmd_type, str):
+            raise ValueError("cmd_type should be an instance of str!")
         self.command_type = cmd_type
         return self
 
