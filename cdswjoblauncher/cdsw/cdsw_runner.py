@@ -53,10 +53,10 @@ class ArgParser:
             help="Turn on console debug level logs",
         )
         parser.add_argument(
-            "--command-type-real-name",
+            "--command-type-name",
             default=None,
             required=True,
-            help="Command type: real name",
+            help="Command type name",
         )
         parser.add_argument(
             "--command-type-session-based",
@@ -117,7 +117,7 @@ class CdswRunnerConfig:
         config_reader: CdswConfigReaderAdapter = None,
     ):
         self._validate_args(parser, args)
-        self.command_type_real_name = args.command_type_real_name
+        self.command_type_name = args.command_type_name
         self.command_type_session_based = args.command_type_session_based
         self.command_type_zip_name = args.command_type_zip_name
         self.command_type_valid_env_vars = args.command_type_valid_env_vars
@@ -136,7 +136,7 @@ class CdswRunnerConfig:
         if self.execution_mode == ConfigMode.SPECIFIED_CONFIG_FILE:
             return args.config_file
         elif self.execution_mode == ConfigMode.AUTO_DISCOVERY:
-            LOG.info("Trying to discover config file for command: %s", self.command_type_real_name)
+            LOG.info("Trying to discover config file for command: %s", self.command_type_name)
             return self._discover_config_file()
 
     def _discover_config_file(self):
@@ -147,12 +147,12 @@ class CdswRunnerConfig:
             single_level=True,
             full_path_result=True,
         )
-        expected_filename = f"{self.command_type_real_name}_job_config.py"
+        expected_filename = f"{self.command_type_name}_job_config.py"
         file_names = [os.path.basename(f) for f in file_paths]
         if expected_filename not in file_names:
             raise ValueError(
                 "Auto-discovery failed for command '{}'. Expected file path: {}, Actual files found: {}".format(
-                    self.command_type_real_name, expected_filename, file_paths
+                    self.command_type_name, expected_filename, file_paths
                 )
             )
         return FileUtils.join_path(self.config_dir, expected_filename)
@@ -207,7 +207,7 @@ class CdswRunner:
         self.executed_commands = []
         self.google_drive_uploads: List[
             Tuple[str, str, DriveApiFile]
-        ] = []  # Tuple of: (command_type_real_name, drive_filename, drive_api_file)
+        ] = []  # Tuple of: (command_type_name, drive_filename, drive_api_file)
         self.common_mail_config = CommonMailConfig()
         self._setup_google_drive(config.module_name, google_drive_cdsw_helper=google_drive_cdsw_helper)
         self.cdsw_runner_config = config
@@ -218,10 +218,10 @@ class CdswRunner:
         self.output_basedir = None
 
     def _check_command_type(self):
-        if self.cdsw_runner_config.command_type_real_name != self.job_config.command_type:
+        if self.cdsw_runner_config.command_type_name != self.job_config.command_type:
             raise ValueError(
                 "Specified command line command type is different than job's command type. CLI: {}, Job definition: {}".format(
-                    self.cdsw_runner_config.command_type_real_name, self.job_config.command_type
+                    self.cdsw_runner_config.command_type_name, self.job_config.command_type
                 )
             )
         return self.job_config.command_type
@@ -250,7 +250,7 @@ class CdswRunner:
         for run in self.job_config.runs:
             self.execute_main_script(" ".join(run.main_script_arguments))
             if self.cdsw_runner_config.command_type_session_based:
-                self.execute_command_data_zipper(self.cdsw_runner_config.command_type_real_name)
+                self.execute_command_data_zipper(self.cdsw_runner_config.command_type_name)
                 drive_link_html_text = self._upload_command_data_to_google_drive_if_required(run)
                 self._send_email_if_required(run, drive_link_html_text)
 
@@ -271,12 +271,12 @@ class CdswRunner:
         drive_filename = run.drive_api_upload_settings.file_name
         if not self.dry_run:
             drive_api_file: DriveApiFile = self.upload_command_data_to_drive(drive_filename)
-            self.google_drive_uploads.append((self.cdsw_runner_config.command_type_real_name, drive_filename, drive_api_file))
+            self.google_drive_uploads.append((self.cdsw_runner_config.command_type_name, drive_filename, drive_api_file))
             return f'<a href="{drive_api_file.link}">Command data file: {drive_filename}</a>'
         else:
             LOG.info(
                 "[DRY-RUN] Would upload file for command type '%s' to Google Drive with name '%s'",
-                self.cdsw_runner_config.command_type_real_name,
+                self.cdsw_runner_config.command_type_name,
                 drive_filename,
             )
             return f'<a href="dummy_link">Command data file: {drive_filename}</a>'
@@ -356,7 +356,7 @@ class CdswRunner:
 
     def upload_command_data_to_drive(self, drive_filename: str) -> DriveApiFile:
         full_file_path_of_cmd_data = FileUtils.join_path(self.output_basedir, self.cdsw_runner_config.command_type_zip_name)
-        return self.drive_cdsw_helper.upload(self.cdsw_runner_config.command_type_real_name, full_file_path_of_cmd_data, drive_filename)
+        return self.drive_cdsw_helper.upload(self.cdsw_runner_config.command_type_name, full_file_path_of_cmd_data, drive_filename)
 
     def send_latest_command_data_in_email(
         self,

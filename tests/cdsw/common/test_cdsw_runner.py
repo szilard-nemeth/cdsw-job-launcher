@@ -92,7 +92,7 @@ class TestCdswRunner(unittest.TestCase):
         args.module_name = TEST_MODULE_NAME
         args.main_script_name = TEST_MODULE_MAIN_SCRIPT_NAME
         args.config_file = config_file
-        args.command_type_real_name = DEFAULT_COMMAND_TYPE
+        args.command_type_name = DEFAULT_COMMAND_TYPE
         args.command_type_session_based = True
         args.command_type_zip_name = f"latest-command-data-zip-{DEFAULT_COMMAND_TYPE}"
         args.command_type_valid_env_vars = ["GSHEET_CLIENT_SECRET", "GSHEET_SPREADSHEET", "GSHEET_WORKSHEET",
@@ -107,9 +107,9 @@ class TestCdswRunner(unittest.TestCase):
         args.logging_debug = True
         args.verbose = True
         if override_cmd_type:
-            args.command_type_real_name = override_cmd_type
+            args.command_type_name = override_cmd_type
         else:
-            args.command_type_real_name = DEFAULT_COMMAND_TYPE
+            args.command_type_name = DEFAULT_COMMAND_TYPE
 
         if add_job_preparation_callback:
             args.job_preparation_callback = ["JobPreparation.execute"]
@@ -171,7 +171,7 @@ class TestCdswRunner(unittest.TestCase):
         args, reviewsync_config_file_path = self._create_args_for_auto_discovery(dry_run=True)
         config = CdswRunnerConfig(self.parser, args)
 
-        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type_real_name)
+        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type_name)
         self.assertTrue(config.dry_run)
         self.assertEqual(ConfigMode.AUTO_DISCOVERY, config.execution_mode)
         self.assertEqual(reviewsync_config_file_path, config.job_config_file)
@@ -180,7 +180,7 @@ class TestCdswRunner(unittest.TestCase):
         args = self._create_args_for_specified_file(FAKE_CONFIG_FILE, dry_run=True)
         config = CdswRunnerConfig(self.parser, args)
 
-        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type_real_name)
+        self.assertEqual(DEFAULT_COMMAND_TYPE, config.command_type_name)
         self.assertTrue(config.dry_run)
         self.assertEqual(ConfigMode.SPECIFIED_CONFIG_FILE, config.execution_mode)
         self.assertEqual(FAKE_CONFIG_FILE, config.job_config_file)

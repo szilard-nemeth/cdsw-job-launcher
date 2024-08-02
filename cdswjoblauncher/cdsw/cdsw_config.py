@@ -512,29 +512,29 @@ class EnvironmentVariables:
         self,
         mandatory_env_vars: List[str],
         optional_env_vars: List[str],
-        command_type_real_name: str,
+        command_type_name: str,
         valid_env_vars: List[str],
     ):
         self.valid_env_vars = valid_env_vars + [e.value for e in CdswEnvVar]
-        self._validate_mandatory_env_var_names(mandatory_env_vars, command_type_real_name)
-        self._validate_optional_env_var_names(optional_env_vars, command_type_real_name)
+        self._validate_mandatory_env_var_names(mandatory_env_vars, command_type_name)
+        self._validate_optional_env_var_names(optional_env_vars, command_type_name)
         self._ensure_if_mandatory_env_vars_are_set(mandatory_env_vars)
 
-    def _validate_optional_env_var_names(self, optional_env_vars, command_type_real_name: str):
+    def _validate_optional_env_var_names(self, optional_env_vars, command_type_name: str):
         for env_var_name in optional_env_vars:
             if env_var_name not in self.valid_env_vars:
                 raise ValueError(
                     "Invalid optional env var specified as '{}'. Valid env vars for Command '{}' are: {}".format(
-                        env_var_name, command_type_real_name, self.valid_env_vars
+                        env_var_name, command_type_name, self.valid_env_vars
                     )
                 )
 
-    def _validate_mandatory_env_var_names(self, mandatory_env_vars, command_type_real_name: str):
+    def _validate_mandatory_env_var_names(self, mandatory_env_vars, command_type_name: str):
         for env_var_name in mandatory_env_vars:
             if env_var_name not in self.valid_env_vars:
                 raise ValueError(
                     "Invalid mandatory env var specified as '{}'. Valid env vars for Command '{}' are: {}".format(
-                        env_var_name, command_type_real_name, self.valid_env_vars
+                        env_var_name, command_type_name, self.valid_env_vars
                     )
                 )
 
