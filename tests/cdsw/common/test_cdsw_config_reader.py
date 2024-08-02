@@ -40,7 +40,8 @@ class CdswConfigReaderTest(unittest.TestCase):
 
         OsUtils.set_env_value("ENABLE_LOGGER_HANDLER_SANITY_CHECK", "False")
         cls.setup_result: CdswSetupResult = CdswSetup.initial_setup(TEST_MODULE_NAME,
-                                                                    TEST_MODULE_MAIN_SCRIPT_NAME)
+                                                                    TEST_MODULE_MAIN_SCRIPT_NAME,
+                                                                    job_prep_callback_names=[])
 
     def setUp(self):
         pass
