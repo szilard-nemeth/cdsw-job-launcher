@@ -59,12 +59,6 @@ class ArgParser:
             help="Command type: real name",
         )
         parser.add_argument(
-            "--command-type-name",
-            default=None,
-            required=True,
-            help="Command type: name",
-        )
-        parser.add_argument(
             "--command-type-session-based",
             action="store_true",
             default=None,
@@ -124,7 +118,6 @@ class CdswRunnerConfig:
     ):
         self._validate_args(parser, args)
         self.command_type_real_name = args.command_type_real_name
-        self.command_type_name = args.command_type_name
         self.command_type_session_based = args.command_type_session_based
         self.command_type_zip_name = args.command_type_zip_name
         self.command_type_valid_env_vars = args.command_type_valid_env_vars
@@ -143,7 +136,7 @@ class CdswRunnerConfig:
         if self.execution_mode == ConfigMode.SPECIFIED_CONFIG_FILE:
             return args.config_file
         elif self.execution_mode == ConfigMode.AUTO_DISCOVERY:
-            LOG.info("Trying to discover config file for command: %s", self.command_type_name)
+            LOG.info("Trying to discover config file for command: %s", self.command_type_real_name)
             return self._discover_config_file()
 
     def _discover_config_file(self):
@@ -159,7 +152,7 @@ class CdswRunnerConfig:
         if expected_filename not in file_names:
             raise ValueError(
                 "Auto-discovery failed for command '{}'. Expected file path: {}, Actual files found: {}".format(
-                    self.command_type_name, expected_filename, file_paths
+                    self.command_type_real_name, expected_filename, file_paths
                 )
             )
         return FileUtils.join_path(self.config_dir, expected_filename)
@@ -225,10 +218,10 @@ class CdswRunner:
         self.output_basedir = None
 
     def _check_command_type(self):
-        if self.cdsw_runner_config.command_type_name != self.job_config.command_type:
+        if self.cdsw_runner_config.command_type_real_name != self.job_config.command_type:
             raise ValueError(
                 "Specified command line command type is different than job's command type. CLI: {}, Job definition: {}".format(
-                    self.cdsw_runner_config.command_type_name, self.job_config.command_type
+                    self.cdsw_runner_config.command_type_real_name, self.job_config.command_type
                 )
             )
         return self.job_config.command_type
@@ -257,7 +250,7 @@ class CdswRunner:
         for run in self.job_config.runs:
             self.execute_main_script(" ".join(run.main_script_arguments))
             if self.cdsw_runner_config.command_type_session_based:
-                self.execute_command_data_zipper(self.cdsw_runner_config.command_type_name)
+                self.execute_command_data_zipper(self.cdsw_runner_config.command_type_real_name)
                 drive_link_html_text = self._upload_command_data_to_google_drive_if_required(run)
                 self._send_email_if_required(run, drive_link_html_text)
 

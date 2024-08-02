@@ -93,7 +93,6 @@ class TestCdswRunner(unittest.TestCase):
         args.main_script_name = TEST_MODULE_MAIN_SCRIPT_NAME
         args.config_file = config_file
         args.command_type_real_name = DEFAULT_COMMAND_TYPE
-        args.command_type_name = DEFAULT_COMMAND_TYPE
         args.command_type_session_based = True
         args.command_type_zip_name = f"latest-command-data-zip-{DEFAULT_COMMAND_TYPE}"
         args.command_type_valid_env_vars = ["GSHEET_CLIENT_SECRET", "GSHEET_SPREADSHEET", "GSHEET_WORKSHEET",
@@ -109,10 +108,8 @@ class TestCdswRunner(unittest.TestCase):
         args.verbose = True
         if override_cmd_type:
             args.command_type_real_name = override_cmd_type
-            args.command_type_name = override_cmd_type
         else:
             args.command_type_real_name = DEFAULT_COMMAND_TYPE
-            args.command_type_name = DEFAULT_COMMAND_TYPE
 
         if add_job_preparation_callback:
             args.job_preparation_callback = ["JobPreparation.execute"]
