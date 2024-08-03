@@ -5,3 +5,4 @@ venv
 /cdswjoblauncher.egg-info/
 dist
 __pycache__
+/cdswjoblauncher/cli/config.json

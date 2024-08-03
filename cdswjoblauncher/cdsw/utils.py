@@ -1,9 +1,8 @@
 import importlib
+import logging
 import pkgutil
-from dataclasses import dataclass
 from typing import List, Callable
 
-import logging
 LOG = logging.getLogger(__name__)
 
 
